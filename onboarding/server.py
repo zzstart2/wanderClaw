@@ -111,24 +111,38 @@ def get_messages(user_id, limit=100):
     return load_json(f, [])[-limit:]
 
 def send_to_agent(user_id, content, user_info):
-    """写入 inbox.json，尝试触发 agent"""
-    workspace = Path(user_info.get('workspace', ''))
-    if not workspace.exists():
-        return False
-    inbox_f = workspace / 'inbox.json'
-    inbox = load_json(inbox_f, [])
-    inbox.append({'content': content, 'timestamp': datetime.now().isoformat(), 'read': False})
-    save_json(inbox_f, inbox)
-
-    # 尝试通过 openclaw CLI 触发 agent
+    """调用 openclaw agent 触发对话，异步捕获回复写入 outbox"""
     agent_id = user_info.get('agent_id', user_id)
-    try:
-        subprocess.Popen(
-            ['openclaw', 'agent', 'notify', agent_id, '--inbox'],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
-    except Exception:
-        pass
+    workspace = Path(user_info.get('workspace', ''))
+
+    def _run():
+        try:
+            r = subprocess.run(
+                ['openclaw', 'agent', '--agent', agent_id, '-m', content, '--json'],
+                capture_output=True, text=True, timeout=120
+            )
+            if r.returncode != 0:
+                return
+            resp = json.loads(r.stdout)
+            payloads = resp.get('result', {}).get('payloads', [])
+            for p in payloads:
+                text = p.get('text', '').strip()
+                if not text:
+                    continue
+                # 写入 outbox，outbox_poller 会自动推送给前端
+                outbox_f = workspace / 'outbox.json'
+                outbox = load_json(outbox_f, [])
+                outbox.append({
+                    'type': 'message',
+                    'from': 'agent',
+                    'content': text,
+                    'timestamp': datetime.now().isoformat()
+                })
+                save_json(outbox_f, outbox)
+        except Exception:
+            pass
+
+    threading.Thread(target=_run, daemon=True, name=f'AgentCall-{agent_id}').start()
     return True
 
 # ════════════════════════════════════════
