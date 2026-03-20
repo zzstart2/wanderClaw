@@ -458,7 +458,8 @@ async function sendMsg() {
 }
 
 function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
+  // e.isComposing = true 时说明输入法正在组合词，此时 Enter 是确认候选词，不发送
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
     e.preventDefault();
     sendMsg();
   }
