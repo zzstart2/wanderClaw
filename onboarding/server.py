@@ -543,8 +543,7 @@ class Handler(BaseHTTPRequestHandler):
 
         elif path == '/api/pairing/auto':
             # Auto-approve the first pending pairing request (called by onboarding page)
-            uid, u = self.auth_user()
-            if not uid: return
+            # Auth is optional — onboarding page may not have a session token yet
             try:
                 r = subprocess.run(['openclaw','pairing','list','--json'],
                                    capture_output=True, text=True, timeout=6)
