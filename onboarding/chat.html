@@ -425,6 +425,15 @@ async function sendMsg() {
   _sending = true;
   input.value = '';
   autoResize(input);
+
+  // Create message ONCE and render ONCE — single source of truth
+  const msg = {
+    id: 'tmp_' + Date.now(),
+    type: 'message', from: 'user', content,
+    timestamp: new Date().toISOString()
+  };
+  allMessages.push(msg);
+  appendMsgEl(msg, true);
   showTyping(true);
 
   try {
@@ -433,21 +442,13 @@ async function sendMsg() {
       headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
       body: JSON.stringify({ content })
     });
-    const data = r.ok ? await r.json() : null;
-    // Render AFTER server confirms — avoids duplicate with any SSE echo
-    const msg = {
-      id: data?.message_id || ('tmp_' + Date.now()),
-      type: 'message', from: 'user', content,
-      timestamp: new Date().toISOString()
-    };
-    allMessages.push(msg);
-    appendMsgEl(msg, true);
-  } catch {
-    // Fallback: render anyway so user sees their message
-    const msg = { id: 'tmp_' + Date.now(), type: 'message', from: 'user', content, timestamp: new Date().toISOString() };
-    allMessages.push(msg);
-    appendMsgEl(msg, true);
-  } finally {
+    if (r.ok) {
+      const data = await r.json().catch(() => null);
+      // Update id in-place if server confirmed
+      if (data?.message_id) msg.id = data.message_id;
+    }
+  } catch { /* network error — message already rendered */ }
+  finally {
     _sending = false;
     showTyping(false);
   }
@@ -497,9 +498,12 @@ function connectSSE() {
     try {
       const event = JSON.parse(e.data);
       if (event.type === 'message' && event.data) {
-        allMessages.push(event.data);
+        // Dedup: skip if ID already in allMessages
+        const incoming = event.data;
+        if (incoming.id && allMessages.some(m => m.id === incoming.id)) return;
+        allMessages.push(incoming);
         showTyping(false);
-        appendMsgEl(event.data, true);
+        appendMsgEl(incoming, true);
       } else if (event.type === 'typing') {
         showTyping(event.active);
       } else if (event.type === 'status') {
