@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🦐 虾游</title>
+  <style>
+    :root {
+      --bg: #0d0d12; --surface: #16161f; --surface2: #1c1c28; --surface3: #222232;
+      --border: #2a2a3d; --accent: #7c6fe0; --accent2: #5eb8ff; --accent3: #62d9a0;
+      --warn: #f5a623; --red: #ff6b6b;
+      --text: #e2e2f0; --text2: #8888aa; --text3: #44445a;
+      --topbar-h: 58px; --input-h: 80px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, 'PingFang SC', sans-serif;
+      font-size: 14px; display: flex; flex-direction: column;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      height: var(--topbar-h); flex-shrink: 0;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 20px; gap: 12px;
+    }
+    .agent-avatar { font-size: 26px; line-height: 1; }
+    .agent-info { flex: 1; }
+    .agent-name { font-size: 15px; font-weight: 700; }
+    .agent-status { font-size: 11px; color: var(--text2); margin-top: 1px; }
+    .phase-badge {
+      display: inline-block; padding: 1px 7px; border-radius: 8px;
+      font-size: 10px; font-weight: 600;
+    }
+    .phase-cold_start { background: rgba(245,166,35,0.12); color: var(--warn); border: 1px solid rgba(245,166,35,0.2); }
+    .phase-trust_building { background: rgba(94,184,255,0.12); color: var(--accent2); border: 1px solid rgba(94,184,255,0.2); }
+    .phase-mature { background: rgba(98,217,160,0.12); color: var(--accent3); border: 1px solid rgba(98,217,160,0.2); }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-explore {
+      display: flex; align-items: center; gap: 5px;
+      padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text2); font-size: 12px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .btn-explore:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-explore:disabled { opacity: 0.4; cursor: not-allowed; }
+    .user-chip {
+      padding: 5px 12px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 20px;
+      font-size: 12px; color: var(--text2); cursor: pointer;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .user-chip:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── Messages ── */
+    .messages {
+      flex: 1; overflow-y: auto; padding: 24px 0;
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* Message groups */
+    .msg-wrap {
+      padding: 3px 20px; display: flex; flex-direction: column;
+    }
+    .msg-wrap.from-user { align-items: flex-end; }
+    .msg-wrap.from-agent { align-items: flex-start; }
+    .msg-wrap.system-msg { align-items: center; }
+
+    /* Bubble messages */
+    .bubble-row { display: flex; align-items: flex-end; gap: 8px; max-width: 72%; }
+    .from-user .bubble-row { flex-direction: row-reverse; }
+    .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .bubble {
+      padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.6;
+      max-width: 100%; word-break: break-word;
+    }
+    .from-agent .bubble {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-bottom-left-radius: 4px; color: var(--text);
+    }
+    .from-user .bubble {
+      background: var(--accent); color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .msg-time {
+      font-size: 10px; color: var(--text3); margin-top: 4px;
+      padding: 0 4px;
+    }
+    .from-user .msg-time { text-align: right; }
+
+    /* System messages */
+    .system-text {
+      font-size: 11px; color: var(--text3);
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 4px 12px; margin: 8px 0;
+    }
+
+    /* ── Postcard ── */
+    .postcard-wrap { padding: 6px 20px; }
+    .postcard-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      border-left: 3px solid var(--accent);
+      max-width: 560px;
+    }
+    .postcard-header {
+      padding: 12px 16px 10px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .postcard-icon { font-size: 18px; }
+    .postcard-num { font-size: 11px; font-weight: 700; color: var(--accent); font-family: monospace; }
+    .postcard-dir { font-size: 13px; font-weight: 600; flex: 1; }
+    .postcard-score {
+      font-size: 11px; font-weight: 700; padding: 2px 8px;
+      border-radius: 8px;
+    }
+    .score-high { background: rgba(98,217,160,0.12); color: var(--accent3); border: 1px solid rgba(98,217,160,0.2); }
+    .score-mid  { background: rgba(94,184,255,0.12); color: var(--accent2); border: 1px solid rgba(94,184,255,0.2); }
+    .score-low  { background: rgba(124,111,224,0.12); color: var(--accent); border: 1px solid rgba(124,111,224,0.2); }
+    .postcard-body {
+      padding: 14px 16px; font-size: 13px; line-height: 1.75;
+      color: var(--text2); max-height: 160px; overflow: hidden;
+      position: relative; transition: max-height 0.4s ease;
+    }
+    .postcard-body.expanded { max-height: 2000px; }
+    .postcard-body:not(.expanded)::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 40px; background: linear-gradient(transparent, var(--surface));
+    }
+    .postcard-footer {
+      padding: 8px 16px 10px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .postcard-time { font-size: 10px; color: var(--text3); }
+    .expand-btn {
+      font-size: 11px; color: var(--accent2); cursor: pointer;
+      background: none; border: none; font-family: inherit; padding: 0;
+    }
+    .expand-btn:hover { text-decoration: underline; }
+
+    /* ── Input area ── */
+    .input-area {
+      flex-shrink: 0; background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px; display: flex; gap: 10px; align-items: flex-end;
+    }
+    .input-box { flex: 1; position: relative; }
+    textarea {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px; color: var(--text);
+      font-size: 14px; font-family: inherit; outline: none; resize: none;
+      line-height: 1.5; max-height: 120px; min-height: 42px;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { border-color: var(--accent); }
+    textarea::placeholder { color: var(--text3); }
+    .send-btn {
+      width: 42px; height: 42px; border-radius: 10px; border: none;
+      background: var(--accent); color: white; font-size: 16px;
+      cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .send-btn:hover { background: #6a5ed4; }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 40px;
+    }
+    .empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-title { font-size: 16px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+    .empty-sub { font-size: 13px; color: var(--text3); }
+
+    /* ── SSE indicator ── */
+    .conn-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent3); flex-shrink: 0;
+      animation: pulse 2s infinite;
+    }
+    .conn-dot.disconnected { background: var(--text3); animation: none; }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    /* ── Typing indicator ── */
+    .typing-wrap { padding: 4px 20px; }
+    .typing-indicator {
+      display: inline-flex; gap: 4px; padding: 8px 14px;
+      background: var(--surface2); border-radius: 14px;
+      border-bottom-left-radius: 4px;
+    }
+    .dot { width: 6px; height: 6px; background: var(--text3); border-radius: 50%; animation: bounce 1.2s infinite; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+    /* ── Scrollbar ── */
+    .messages { scroll-behavior: smooth; }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="agent-avatar" id="agentEmoji">🦐</div>
+  <div class="agent-info">
+    <div class="agent-name" id="agentName">虾游</div>
+    <div class="agent-status">
+      <span class="phase-badge phase-cold_start" id="phaseBadge">cold_start</span>
+      <span id="lastActiveText" style="margin-left:6px;font-size:11px;color:var(--text3)"></span>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <div class="conn-dot disconnected" id="connDot" title="实时连接状态"></div>
+    <button class="btn-explore" id="exploreBtn" onclick="triggerExplore()">
+      🔭 立刻探索
+    </button>
+    <div class="user-chip" id="userChip" onclick="logout()" title="点击退出登录">
+      <span id="userNameDisplay">—</span>
+      <span style="font-size:10px">↩</span>
+    </div>
+  </div>
+</div>
+
+<!-- Message feed -->
+<div class="messages" id="msgFeed">
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="empty-icon">🦐</div>
+    <div class="empty-title">虾游还没有发来消息</div>
+    <div class="empty-sub">探索结果会以明信片的形式出现在这里<br>你也可以直接给它发消息</div>
+  </div>
+</div>
+
+<!-- Input -->
+<div class="input-area">
+  <div class="input-box">
+    <textarea id="msgInput" rows="1" placeholder="给虾游发消息，或告诉它去探索某个方向…"
+      oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+  </div>
+  <button class="send-btn" id="sendBtn" onclick="sendMsg()" title="发送 (Enter)">➤</button>
+</div>
+
+<script>
+const TOKEN = localStorage.getItem('wanderclaw_token');
+let currentUser = null;
+let sseSource = null;
+let allMessages = [];
+
+// ── Boot ──
+(async () => {
+  if (!TOKEN) { injectDemoMessages(); return; }
+  try {
+    const r = await fetch('/api/auth/me', authHeaders());
+    if (!r.ok) { location.href = '/login'; return; }
+    currentUser = await r.json();
+  } catch {
+    // Dev mode / no backend: show demo
+    const stored = localStorage.getItem('wanderclaw_user');
+    if (stored) { currentUser = JSON.parse(stored); }
+    else { injectDemoMessages(); return; }
+  }
+
+  renderUserInfo();
+  await loadMessages();
+  connectSSE();
+})();
+
+function authHeaders() {
+  return { headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' } };
+}
+
+// ── User info ──
+function renderUserInfo() {
+  if (!currentUser) return;
+  document.getElementById('agentEmoji').textContent = currentUser.agent_emoji || '🦐';
+  document.getElementById('agentName').textContent = currentUser.agent_name || '虾游';
+  document.getElementById('userNameDisplay').textContent = currentUser.user_name || '—';
+
+  const phase = currentUser.exploration_phase || 'cold_start';
+  const badge = document.getElementById('phaseBadge');
+  badge.textContent = phase;
+  badge.className = 'phase-badge phase-' + phase;
+}
+
+// ── Load history ──
+async function loadMessages() {
+  try {
+    const r = await fetch('/api/messages?limit=100', authHeaders());
+    if (!r.ok) return;
+    allMessages = await r.json();
+    renderAll();
+  } catch {
+    injectDemoMessages();
+  }
+}
+
+function renderAll() {
+  const feed = document.getElementById('msgFeed');
+  // Remove existing messages (keep empty state)
+  feed.querySelectorAll('.msg-wrap,.postcard-wrap,.typing-wrap,.system-msg-wrap').forEach(e => e.remove());
+
+  if (!allMessages.length) {
+    document.getElementById('emptyState').style.display = 'flex';
+    return;
+  }
+  document.getElementById('emptyState').style.display = 'none';
+
+  allMessages.forEach(msg => appendMsgEl(msg, false));
+  scrollToBottom(false);
+}
+
+// ── Render a single message ──
+function appendMsgEl(msg, animate = true) {
+  const feed = document.getElementById('msgFeed');
+  // Remove empty state
+  document.getElementById('emptyState').style.display = 'none';
+
+  let el;
+  if (msg.type === 'postcard') {
+    el = renderPostcard(msg);
+    feed.appendChild(el);
+  } else if (msg.type === 'system') {
+    el = renderSystem(msg);
+    feed.appendChild(el);
+  } else {
+    el = renderBubble(msg);
+    feed.appendChild(el);
+  }
+
+  if (animate) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(8px)';
+    requestAnimationFrame(() => {
+      el.style.transition = 'opacity 0.25s, transform 0.25s';
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    });
+    scrollToBottom(true);
+  }
+}
+
+function renderBubble(msg) {
+  const wrap = document.createElement('div');
+  wrap.className = `msg-wrap ${msg.from === 'user' ? 'from-user' : 'from-agent'}`;
+  const row = document.createElement('div');
+  row.className = 'bubble-row';
+  if (msg.from === 'agent') {
+    const av = document.createElement('div');
+    av.className = 'avatar';
+    av.textContent = currentUser?.agent_emoji || '🦐';
+    row.appendChild(av);
+  }
+  const bub = document.createElement('div');
+  bub.className = 'bubble';
+  bub.textContent = msg.content;
+  row.appendChild(bub);
+  wrap.appendChild(row);
+  const time = document.createElement('div');
+  time.className = 'msg-time';
+  time.textContent = formatTime(msg.timestamp);
+  wrap.appendChild(time);
+  return wrap;
+}
+
+function renderPostcard(msg) {
+  const meta = msg.metadata || {};
+  const score = meta.score || 0;
+  const scoreClass = score >= 8.5 ? 'score-high' : score >= 7.5 ? 'score-mid' : 'score-low';
+  const wrap = document.createElement('div');
+  wrap.className = 'postcard-wrap';
+  wrap.innerHTML = `
+    <div class="postcard-card">
+      <div class="postcard-header">
+        <span class="postcard-icon">📮</span>
+        ${meta.postcard_num ? `<span class="postcard-num">#${String(meta.postcard_num).padStart(3,'0')}</span>` : ''}
+        <span class="postcard-dir">${meta.direction || '知识探索'}</span>
+        ${score ? `<span class="postcard-score ${scoreClass}">${score}分</span>` : ''}
+      </div>
+      <div class="postcard-body" id="pb_${msg.id}">
+        ${escHtml(msg.content).replace(/\n/g,'<br>')}
+      </div>
+      <div class="postcard-footer">
+        <span class="postcard-time">${formatTime(msg.timestamp)}</span>
+        <button class="expand-btn" onclick="togglePostcard('${msg.id}', this)">展开全文 ↓</button>
+      </div>
+    </div>`;
+  return wrap;
+}
+
+function renderSystem(msg) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap system-msg';
+  const text = document.createElement('div');
+  text.className = 'system-text';
+  text.textContent = msg.content;
+  wrap.appendChild(text);
+  return wrap;
+}
+
+function togglePostcard(id, btn) {
+  const body = document.getElementById('pb_' + id);
+  if (body.classList.toggle('expanded')) {
+    btn.textContent = '收起 ↑';
+  } else {
+    btn.textContent = '展开全文 ↓';
+  }
+}
+
+// ── Send message ──
+async function sendMsg() {
+  const input = document.getElementById('msgInput');
+  const content = input.value.trim();
+  if (!content) return;
+
+  input.value = '';
+  autoResize(input);
+
+  // Optimistic render
+  const tempMsg = { id: 'tmp_' + Date.now(), type: 'message', from: 'user', content, timestamp: new Date().toISOString() };
+  allMessages.push(tempMsg);
+  appendMsgEl(tempMsg, true);
+
+  // Show typing indicator
+  showTyping(true);
+
+  try {
+    const r = await fetch('/api/send', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+    if (!r.ok) throw new Error();
+  } catch {
+    // Message stored in inbox even if agent isn't immediately triggered
+  }
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMsg();
+  }
+}
+
+// ── Explore ──
+async function triggerExplore() {
+  const btn = document.getElementById('exploreBtn');
+  btn.disabled = true;
+  btn.textContent = '🔭 探索中...';
+
+  const sysMsg = { id: 'sys_' + Date.now(), type: 'system', content: '已发送探索指令，虾游正在出发…', timestamp: new Date().toISOString() };
+  appendMsgEl(sysMsg, true);
+
+  try {
+    await fetch('/api/explore', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+  } catch {}
+
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.textContent = '🔭 立刻探索';
+  }, 5000);
+}
+
+// ── SSE ──
+function connectSSE() {
+  if (sseSource) sseSource.close();
+  const url = `/api/stream?token=${encodeURIComponent(TOKEN)}`;
+  sseSource = new EventSource(url);
+
+  sseSource.onopen = () => {
+    document.getElementById('connDot').classList.remove('disconnected');
+  };
+
+  sseSource.onmessage = (e) => {
+    try {
+      const event = JSON.parse(e.data);
+      if (event.type === 'message' && event.data) {
+        allMessages.push(event.data);
+        showTyping(false);
+        appendMsgEl(event.data, true);
+      } else if (event.type === 'typing') {
+        showTyping(event.active);
+      } else if (event.type === 'status') {
+        updateStatus(event.data);
+      }
+    } catch {}
+  };
+
+  sseSource.onerror = () => {
+    document.getElementById('connDot').classList.add('disconnected');
+    setTimeout(connectSSE, 5000);
+  };
+}
+
+// ── Typing indicator ──
+let typingEl = null;
+function showTyping(show) {
+  if (show && !typingEl) {
+    typingEl = document.createElement('div');
+    typingEl.className = 'typing-wrap';
+    typingEl.innerHTML = `<div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+    document.getElementById('msgFeed').appendChild(typingEl);
+    scrollToBottom(true);
+  } else if (!show && typingEl) {
+    typingEl.remove();
+    typingEl = null;
+  }
+}
+
+function updateStatus(data) {
+  if (data.phase) {
+    const badge = document.getElementById('phaseBadge');
+    badge.textContent = data.phase;
+    badge.className = 'phase-badge phase-' + data.phase;
+  }
+  if (data.last_exploration) {
+    document.getElementById('lastActiveText').textContent = '上次探索 ' + formatTime(data.last_exploration);
+  }
+}
+
+// ── Logout ──
+function logout() {
+  if (!confirm('确认退出登录？')) return;
+  localStorage.removeItem('wanderclaw_token');
+  localStorage.removeItem('wanderclaw_user');
+  fetch('/api/auth/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + TOKEN } }).catch(() => {});
+  location.href = '/login';
+}
+
+// ── Utils ──
+function scrollToBottom(smooth) {
+  const feed = document.getElementById('msgFeed');
+  feed.scrollTo({ top: feed.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function formatTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const now = new Date();
+  const diff = now - d;
+  if (diff < 60000) return '刚刚';
+  if (diff < 3600000) return Math.floor(diff / 60000) + ' 分钟前';
+  if (d.toDateString() === now.toDateString()) {
+    return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  }
+  return d.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }) + ' ' +
+         d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Demo messages (dev mode / no backend) ──
+function injectDemoMessages() {
+  currentUser = { agent_emoji: '🦐', agent_name: '虾游', user_name: '阿哲', exploration_phase: 'cold_start' };
+  renderUserInfo();
+  allMessages = [
+    {
+      id: 'demo_sys_1', type: 'system',
+      content: '虾游已上线，开始探索 ✨',
+      timestamp: new Date(Date.now() - 3600000 * 3).toISOString()
+    },
+    {
+      id: 'demo_pc_1', type: 'postcard', from: 'agent',
+      content: '阿哲，第一张明信片。\n\n今天在 arXiv cs.RO 首页翻到一个让我停不下来的巧合：两篇来自完全不同团队的论文，同一天挂出来，都在做同一件事——用 Sparse Autoencoders 拆开 VLA 模型的黑箱看里面到底装了什么。\n\n先说结论，因为这个结论很要命：VLA 模型大部分时候根本不听你说话。语言不是"理解指令"的通道，而是一个消歧的开关。',
+      metadata: { score: 8.7, direction: '具身智能 / VLA可解释性', postcard_num: 1 },
+      timestamp: new Date(Date.now() - 3600000 * 2).toISOString()
+    },
+    {
+      id: 'demo_u_1', type: 'message', from: 'user',
+      content: '有意思！那 VLA 的泛化性怎么解决？',
+      timestamp: new Date(Date.now() - 3600000 * 1.5).toISOString()
+    },
+    {
+      id: 'demo_a_1', type: 'message', from: 'agent',
+      content: '好问题！Stanford 那篇 Dr. VLA 发现关键在数据多样性——在 DROID 这样的大规模多样数据集上训练，能形成可迁移的通用运动原语，而不是单纯背训练数据。小数据集 SFT 会放大记忆化。我去挖一下最新的数据策略研究？',
+      timestamp: new Date(Date.now() - 3600000 * 1.4).toISOString()
+    },
+    {
+      id: 'demo_pc_2', type: 'postcard', from: 'agent',
+      content: '阿哲，这张来得快。\n\nAnthropic 悄悄放了一篇工程博客，讲他们怎么把 Claude Research 的多 Agent 系统从原型做到生产。这篇不是概念宣传，是实打实的踩坑日记。\n\n几个数据先放这儿：多 Agent 系统比单 Agent 强 90.2%——token 消耗是普通对话的 15 倍。三个因素解释了 95% 的性能方差，token 用量独占 80%。',
+      metadata: { score: 8.3, direction: 'AI Agent / 多Agent系统工程', postcard_num: 2 },
+      timestamp: new Date(Date.now() - 600000).toISOString()
+    }
+  ];
+  renderAll();
+  document.getElementById('connDot').title = '演示模式（无后端连接）';
+}
+</script>
+</body>
+</html>

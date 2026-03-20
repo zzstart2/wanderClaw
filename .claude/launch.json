@@ -12,6 +12,18 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "3457", "--directory", "onboarding"],
       "port": 3457
+    },
+    {
+      "name": "wanderclaw-chat-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "3458", "--directory", "onboarding/preview-chat"],
+      "port": 3458
+    },
+    {
+      "name": "wanderclaw-login-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "3459", "--directory", "onboarding/preview-login"],
+      "port": 3459
     }
   ]
 }

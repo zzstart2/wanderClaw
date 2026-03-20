@@ -783,6 +783,12 @@
         </div>
 
         <div class="field">
+          <label>设置登录密码</label>
+          <input type="password" id="userPassword" placeholder="用于网页版登录，建议 8 位以上" />
+          <div class="field-hint">之后可通过 <strong style="color:var(--text2)">http://服务器地址/login</strong> 登录与虾游对话，无需飞书</div>
+        </div>
+
+        <div class="field">
           <label>虾游的名字</label>
           <input type="text" id="agentName" placeholder="虾游" maxlength="10" value="虾游" />
         </div>
@@ -1003,6 +1009,7 @@
   // ── Submit ──
   async function submitSetup() {
     const userName = document.getElementById('userName').value.trim();
+    const userPassword = document.getElementById('userPassword').value;
     const agentName = document.getElementById('agentName').value.trim() || '虾游';
     const appId = document.getElementById('feishuAppId').value.trim();
     const appSecret = document.getElementById('feishuAppSecret').value.trim();
@@ -1010,14 +1017,13 @@
     const customTopics = customRaw ? customRaw.split(/[,，]/).map(t => t.trim()).filter(Boolean) : [];
     const inviteCode = document.getElementById('inviteCode').value.trim();
 
-    if (!userName) {
-      alert('请填写你的名字');
-      return;
-    }
+    if (!userName) { alert('请填写你的名字'); return; }
+    if (!userPassword) { alert('请设置登录密码'); return; }
 
     const payload = {
       invite_code: inviteCode,
       user_name: userName,
+      password: userPassword,
       agent_name: agentName,
       agent_emoji: selectedEmoji,
       feishu_app_id: appId,
