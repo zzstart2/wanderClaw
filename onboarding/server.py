@@ -541,6 +541,46 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 self.send_json({'ok': False, 'message': str(e)})
 
+        elif path == '/api/pairing/auto':
+            # Auto-approve the first pending pairing request (called by onboarding page)
+            uid, u = self.auth_user()
+            if not uid: return
+            try:
+                r = subprocess.run(['openclaw','pairing','list','--json'],
+                                   capture_output=True, text=True, timeout=6)
+                try:
+                    data = json.loads(r.stdout)
+                except Exception:
+                    self.send_json({'ok': False, 'pending': False, 'message': '无法读取配对列表'}); return
+
+                # Find pending requests - openclaw returns list or dict with pending key
+                pending = []
+                if isinstance(data, list):
+                    pending = [x for x in data if not x.get('approved')]
+                elif isinstance(data, dict):
+                    pending = [x for x in data.get('pending', []) if not x.get('approved')]
+
+                if not pending:
+                    self.send_json({'ok': True, 'pending': False, 'message': '暂无待审批配对'}); return
+
+                # Auto-approve the first pending
+                entry = pending[0]
+                code = entry.get('code') or entry.get('pairing_code', '')
+                channel = entry.get('channel', 'feishu')
+                if not code:
+                    self.send_json({'ok': False, 'pending': True, 'message': '配对码格式异常', 'raw': entry}); return
+
+                r2 = subprocess.run(['openclaw','pairing','approve',channel,code],
+                                    capture_output=True, text=True, timeout=10)
+                ok = r2.returncode == 0
+                self.send_json({'ok': ok, 'pending': True, 'approved': ok,
+                                'code': code, 'channel': channel,
+                                'message': r2.stdout.strip() or r2.stderr.strip() or ('配对成功' if ok else '配对失败')})
+            except FileNotFoundError:
+                self.send_json({'ok': False, 'pending': False, 'message': 'openclaw 不在 PATH'})
+            except Exception as e:
+                self.send_json({'ok': False, 'pending': False, 'message': str(e)})
+
         # ── Provision ──
         elif path == '/api/validate-invite':
             valid, msg = validate_invite(body.get('code', ''))

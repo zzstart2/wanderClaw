@@ -850,6 +850,39 @@
       </div>
     </div>
 
+    <!-- ── Step 3.8: Feishu Pairing ── -->
+    <div class="step-panel" id="step-pairing">
+      <div class="card-body">
+        <div class="success-wrap">
+          <div class="success-icon">💬</div>
+          <div class="success-title">完成飞书配对</div>
+          <div class="success-sub">虾游已启动，现在需要绑定你的飞书账号</div>
+        </div>
+
+        <div class="next-steps" style="margin-top:20px">
+          <div class="next-step-item" style="font-size:15px;font-weight:600;color:var(--text)">
+            <span class="icon">📱</span>
+            <span>打开飞书，搜索你刚创建的 Bot，向它发送任意一条消息（如「你好」）</span>
+          </div>
+          <div class="next-step-item" style="margin-top:8px">
+            <span class="icon">⏳</span>
+            <span>发送后此页面会自动检测并完成绑定，无需任何额外操作</span>
+          </div>
+        </div>
+
+        <div id="pairingStatus" style="margin-top:28px;text-align:center">
+          <div style="display:flex;align-items:center;justify-content:center;gap:10px;color:var(--text2)">
+            <div class="spinner" style="width:18px;height:18px;border-width:2px"></div>
+            <span id="pairingStatusText">等待你向 Bot 发送消息...</span>
+          </div>
+        </div>
+
+        <div id="pairingSkip" style="margin-top:24px;text-align:center">
+          <button class="btn btn-ghost" style="font-size:12px" onclick="skipPairing()">暂时跳过，稍后配对</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Step 4: Success ── -->
     <div class="step-panel" id="step-4">
       <div class="card-body">
@@ -860,28 +893,18 @@
         </div>
 
         <div class="next-steps">
-          <h4>接下来怎么做</h4>
-          <div class="next-step-item">
-            <span class="icon">1️⃣</span>
-            <span>在飞书里搜索你刚创建的 Bot，向它发送任意消息（比如「你好」）</span>
+          <h4>接下来</h4>
+          <div class="next-step-item" id="feishuNextStep">
+            <span class="icon">✅</span>
+            <span id="feishuNextText">飞书已绑定，虾游会在飞书私信你</span>
           </div>
           <div class="next-step-item">
-            <span class="icon">2️⃣</span>
-            <span>Bot 不会立刻回复——此时 OpenClaw 会在服务端生成一个 <strong>8 位配对码</strong>。把这个码发给管理员，管理员在后台点「批准」即可完成绑定。</span>
-          </div>
-          <div class="next-step-item" style="padding-left:28px;margin-top:-4px">
-            <span style="font-size:12px;color:var(--text3)">配对码获取方式：管理员在 ECS 运行
-              <code style="font-family:monospace;background:var(--surface2);padding:1px 5px;border-radius:3px">openclaw pairing list</code>
-              即可看到
-            </span>
-          </div>
-          <div class="next-step-item">
-            <span class="icon">3️⃣</span>
-            <span>虾游每天会在活跃时段（08:00–23:00）自动探索，有好发现时会主动发明信片给你</span>
+            <span class="icon">🔍</span>
+            <span>虾游每天在活跃时段（08:00–23:00）自动探索，有发现时主动发明信片给你</span>
           </div>
           <div class="next-step-item">
             <span class="icon">💬</span>
-            <span>你也可以随时给它发消息，让它立刻去探索某个方向</span>
+            <span>你也可以随时在网页端给它发消息，或点「立刻探索」让它马上行动</span>
           </div>
         </div>
 
@@ -1075,6 +1098,7 @@
 
       if (data.success) {
         // Auto-login so user arrives at /chat already authenticated
+        let authToken = null;
         try {
           const loginRes = await fetch('/api/auth/login', {
             method: 'POST',
@@ -1083,11 +1107,12 @@
           });
           const loginData = await loginRes.json();
           if (loginData.token) {
+            authToken = loginData.token;
             localStorage.setItem('wanderclaw_token', loginData.token);
             localStorage.setItem('wanderclaw_user', JSON.stringify(loginData.user));
           }
         } catch (_) {}
-        showSuccess(data, agentName, appId);
+        showSuccess(data, agentName, appId, authToken);
       } else {
         document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
         document.getElementById('step-3').classList.add('active');
@@ -1099,14 +1124,15 @@
       showSuccess({
         agent_id: 'xiayou_' + userName.toLowerCase().replace(/\s/g, '_'),
         message: '配置成功（预览模式）'
-      }, agentName, appId);
+      }, agentName, appId, null);
     }
   }
 
-  function showSuccess(data, agentName, appId) {
-    updateStepIndicator(4);
-    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('step-4').classList.add('active');
+  let _pairingTimer = null;
+  let _pairingToken = null;
+
+  function showSuccess(data, agentName, appId, authToken) {
+    // Pre-fill step 4 data
     document.getElementById('successEmoji').textContent = selectedEmoji;
     document.getElementById('successMsg').textContent =
       agentName + ' 已经在服务器上启动了，随时准备出发探索 🚀';
@@ -1115,8 +1141,62 @@
       document.getElementById('displayAppId').textContent = appId.slice(0, 8) + '••••';
     } else {
       document.getElementById('displayAppIdRow').style.display = 'none';
+      document.getElementById('feishuNextText').textContent = '使用网页版与虾游对话';
     }
     document.getElementById('displayTime').textContent = new Date().toLocaleString('zh-CN');
+
+    if (appId && authToken) {
+      // Show pairing step first
+      updateStepIndicator(4);
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('step-pairing').classList.add('active');
+      _pairingToken = authToken;
+      startPairingPoll();
+    } else {
+      // No feishu — go directly to success
+      updateStepIndicator(4);
+      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('step-4').classList.add('active');
+    }
+  }
+
+  function startPairingPoll() {
+    let attempts = 0;
+    const maxWait = 120; // 2 min
+    _pairingTimer = setInterval(async () => {
+      attempts++;
+      if (attempts > maxWait / 3) {
+        clearInterval(_pairingTimer);
+        document.getElementById('pairingStatusText').textContent = '等待超时，请手动联系管理员配对';
+        return;
+      }
+      try {
+        const r = await fetch('/api/pairing/auto', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + _pairingToken, 'Content-Type': 'application/json' }
+        });
+        const d = await r.json();
+        if (d.ok && d.approved) {
+          clearInterval(_pairingTimer);
+          document.getElementById('pairingStatusText').textContent = '✅ 配对成功！';
+          setTimeout(goToFinalSuccess, 1500);
+        } else if (d.pending) {
+          document.getElementById('pairingStatusText').textContent = '正在审批配对请求...';
+        }
+        // else: no pending yet, keep waiting
+      } catch (_) {}
+    }, 3000);
+  }
+
+  function skipPairing() {
+    clearInterval(_pairingTimer);
+    goToFinalSuccess();
+  }
+
+  function goToFinalSuccess() {
+    updateStepIndicator(4);
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('step-4').classList.add('active');
   }
 
   // ── Utils ──
