@@ -94,6 +94,48 @@
     </div>
   </div>
 
+  <!-- Pairing -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+      <span>🔗 配对审批</span>
+      <button class="btn btn-ghost btn-sm" onclick="loadPairing()">刷新待审批</button>
+    </div>
+    <div class="card-body">
+      <p style="color:var(--text2);font-size:13px;margin-bottom:14px">
+        用户完成配置后，需向其飞书 Bot 发送第一条消息，OpenClaw 会生成配对码。在下方输入该码批准连接。
+      </p>
+
+      <!-- Pending list (if openclaw pairing list works) -->
+      <div id="pairingPending" style="margin-bottom:16px"></div>
+
+      <!-- Manual approve -->
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="pairingCode" placeholder="配对码，如 75YRUMVZ"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+                 padding:8px 12px;color:var(--text);font-size:13px;font-family:monospace;
+                 width:220px;outline:none;letter-spacing:1px;text-transform:uppercase"
+          oninput="this.value=this.value.toUpperCase()"
+        />
+        <select id="pairingChannel"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+                 padding:8px 10px;color:var(--text);font-size:13px;outline:none">
+          <option value="feishu">飞书</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="approveCode()">批准</button>
+      </div>
+      <div id="pairingResult" style="margin-top:10px;font-size:13px;display:none"></div>
+
+      <!-- How-to hint -->
+      <div style="margin-top:16px;padding:12px 14px;background:rgba(94,184,255,0.06);
+                  border:1px solid rgba(94,184,255,0.15);border-radius:8px;font-size:12px;color:var(--text2)">
+        <strong style="color:var(--accent2)">配对码在哪里？</strong><br>
+        在 ECS 上运行 <code style="color:var(--warn);font-family:monospace;font-size:11px">openclaw pairing list</code>，
+        或查看 OpenClaw 日志：<code style="color:var(--warn);font-family:monospace;font-size:11px">journalctl -u openclaw -n 50</code>，
+        找到 <code style="font-family:monospace;font-size:11px;color:var(--accent3)">pairing request</code> 相关条目。
+      </div>
+    </div>
+  </div>
+
   <!-- Users table -->
   <div class="card">
     <div class="card-header">
@@ -225,8 +267,78 @@ function copyCode(code) {
   });
 }
 
+async function loadPairing() {
+  const el = document.getElementById('pairingPending');
+  try {
+    const res = await fetch('/api/pairing/list');
+    const data = await res.json();
+    if (!data.ok) {
+      el.innerHTML = `<div style="font-size:12px;color:var(--text3)">${data.message || '无法获取待审批列表'}</div>`;
+      return;
+    }
+    // 如果 openclaw pairing list --json 返回数组
+    const items = Array.isArray(data.data) ? data.data : [];
+    if (!items.length) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--text3)">暂无待审批配对请求</div>';
+      return;
+    }
+    el.innerHTML = `
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">待审批 ${items.length} 条：</div>
+      ${items.map(p => `
+        <div style="display:flex;justify-content:space-between;align-items:center;
+                    padding:8px 12px;background:rgba(245,166,35,0.08);
+                    border:1px solid rgba(245,166,35,0.2);border-radius:6px;margin-bottom:6px">
+          <div>
+            <span style="font-family:monospace;font-weight:700;color:var(--warn);letter-spacing:1px">${p.code || p}</span>
+            ${p.channel ? `<span style="font-size:11px;color:var(--text3);margin-left:8px">${p.channel}</span>` : ''}
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="quickApprove('${p.code || p}')">批准</button>
+        </div>`).join('')}`;
+  } catch(e) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text3)">无法连接服务器</div>';
+  }
+}
+
+function quickApprove(code) {
+  document.getElementById('pairingCode').value = code;
+  approveCode();
+}
+
+async function approveCode() {
+  const code = document.getElementById('pairingCode').value.trim();
+  const channel = document.getElementById('pairingChannel').value;
+  const resultEl = document.getElementById('pairingResult');
+
+  if (!code) { resultEl.style.display='block'; resultEl.style.color='var(--red)'; resultEl.textContent='请输入配对码'; return; }
+
+  try {
+    const res = await fetch('/api/pairing/approve', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ code, channel })
+    });
+    const data = await res.json();
+    resultEl.style.display = 'block';
+    if (data.ok) {
+      resultEl.style.color = 'var(--accent3)';
+      resultEl.textContent = `✓ ${data.message} (${code})`;
+      document.getElementById('pairingCode').value = '';
+      loadPairing();
+    } else {
+      resultEl.style.color = 'var(--red)';
+      resultEl.textContent = `✗ ${data.message}`;
+    }
+  } catch(e) {
+    resultEl.style.display = 'block';
+    resultEl.style.color = 'var(--red)';
+    resultEl.textContent = '无法连接服务器';
+  }
+}
+
 loadAll();
+loadPairing();
 setInterval(loadAll, 30000);
+setInterval(loadPairing, 15000);  // 每 15 秒刷新配对状态
 </script>
 </body>
 </html>

@@ -295,6 +295,23 @@ class Handler(BaseHTTPRequestHandler):
         elif path == '/api/invites':
             invites = load_json(INVITES_FILE, {})
             self.send_json(invites)
+        elif path == '/api/pairing/list':
+            # 尝试 openclaw pairing list，返回待审批列表
+            try:
+                r = subprocess.run(
+                    ['openclaw', 'pairing', 'list', '--json'],
+                    capture_output=True, text=True, timeout=6
+                )
+                try:
+                    data = json.loads(r.stdout)
+                except Exception:
+                    # 非 JSON 输出，把原文返回
+                    data = {'raw': r.stdout.strip(), 'error': r.stderr.strip()}
+                self.send_json({'ok': True, 'data': data})
+            except FileNotFoundError:
+                self.send_json({'ok': False, 'message': 'openclaw 不在 PATH，请在 ECS 上运行此服务'})
+            except Exception as e:
+                self.send_json({'ok': False, 'message': str(e)})
         else:
             self.send_response(404)
             self.end_headers()
@@ -322,6 +339,28 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(result)
             except Exception as e:
                 self.send_json({'success': False, 'message': str(e)}, 500)
+
+        elif path == '/api/pairing/approve':
+            code = body.get('code', '').strip()
+            channel = body.get('channel', 'feishu')
+            if not code:
+                self.send_json({'ok': False, 'message': '缺少 code'}, 400)
+                return
+            try:
+                r = subprocess.run(
+                    ['openclaw', 'pairing', 'approve', channel, code],
+                    capture_output=True, text=True, timeout=10
+                )
+                ok = r.returncode == 0
+                self.send_json({
+                    'ok': ok,
+                    'message': r.stdout.strip() or r.stderr.strip() or ('批准成功' if ok else '批准失败'),
+                    'code': code
+                })
+            except FileNotFoundError:
+                self.send_json({'ok': False, 'message': 'openclaw 不在 PATH，请在 ECS 上运行此服务'})
+            except Exception as e:
+                self.send_json({'ok': False, 'message': str(e)})
 
         elif path == '/api/admin/generate-invites':
             count = int(body.get('count', 5))

@@ -854,11 +854,17 @@
           <h4>接下来怎么做</h4>
           <div class="next-step-item">
             <span class="icon">1️⃣</span>
-            <span>在飞书里搜索你刚创建的 Bot，发送任意消息给它（比如「你好」）</span>
+            <span>在飞书里搜索你刚创建的 Bot，向它发送任意消息（比如「你好」）</span>
           </div>
           <div class="next-step-item">
             <span class="icon">2️⃣</span>
-            <span>管理员会在后台批准你的连接申请（通常几分钟内），之后虾游就能收到你的消息了</span>
+            <span>Bot 不会立刻回复——此时 OpenClaw 会在服务端生成一个 <strong>8 位配对码</strong>。把这个码发给管理员，管理员在后台点「批准」即可完成绑定。</span>
+          </div>
+          <div class="next-step-item" style="padding-left:28px;margin-top:-4px">
+            <span style="font-size:12px;color:var(--text3)">配对码获取方式：管理员在 ECS 运行
+              <code style="font-family:monospace;background:var(--surface2);padding:1px 5px;border-radius:3px">openclaw pairing list</code>
+              即可看到
+            </span>
           </div>
           <div class="next-step-item">
             <span class="icon">3️⃣</span>
