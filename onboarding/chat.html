@@ -320,20 +320,27 @@ function renderAll() {
 // ── Render a single message ──
 function appendMsgEl(msg, animate = true) {
   const feed = document.getElementById('msgFeed');
+
+  // DOM-level dedup: never render the same message ID twice
+  if (msg.id && feed.querySelector(`[data-msg-id="${CSS.escape(msg.id)}"]`)) {
+    console.warn('[dedup] skipped duplicate render:', msg.id, msg.content);
+    return;
+  }
+  console.log('[appendMsgEl]', msg.id, msg.from, msg.content, new Error().stack.split('\n')[2]);
+
   // Remove empty state
   document.getElementById('emptyState').style.display = 'none';
 
   let el;
   if (msg.type === 'postcard') {
     el = renderPostcard(msg);
-    feed.appendChild(el);
   } else if (msg.type === 'system') {
     el = renderSystem(msg);
-    feed.appendChild(el);
   } else {
     el = renderBubble(msg);
-    feed.appendChild(el);
   }
+  if (msg.id) el.setAttribute('data-msg-id', msg.id);
+  feed.appendChild(el);
 
   if (animate) {
     el.style.opacity = '0';
