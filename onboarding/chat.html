@@ -415,11 +415,14 @@ function togglePostcard(id, btn) {
 }
 
 // ── Send message ──
+let _sending = false;
 async function sendMsg() {
+  if (_sending) return;
   const input = document.getElementById('msgInput');
   const content = input.value.trim();
   if (!content) return;
 
+  _sending = true;
   input.value = '';
   autoResize(input);
 
@@ -440,6 +443,8 @@ async function sendMsg() {
     if (!r.ok) throw new Error();
   } catch {
     // Message stored in inbox even if agent isn't immediately triggered
+  } finally {
+    _sending = false;
   }
 }
 

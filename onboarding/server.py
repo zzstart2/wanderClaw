@@ -498,8 +498,7 @@ class Handler(BaseHTTPRequestHandler):
             msg = store_message(uid, {'type':'message','from':'user','content':content})
             # Try to deliver to agent
             send_to_agent(uid, content, u)
-            # Push back to SSE (so other devices see it)
-            push_sse(uid, {'type': 'message', 'data': msg})
+            # NOTE: do NOT push user messages back via SSE — client already renders optimistically
             self.send_json({'ok': True, 'message_id': msg['id']})
 
         elif path == '/api/explore':
@@ -507,9 +506,7 @@ class Handler(BaseHTTPRequestHandler):
             if not uid: return
             # Write to inbox as exploration request
             send_to_agent(uid, '[EXPLORE] 用户请求立刻探索一个感兴趣的方向', u)
-            # System message
-            sys_msg = store_message(uid, {'type':'system','content':'已发送探索指令，虾游出发中 🔭'})
-            push_sse(uid, {'type': 'message', 'data': sys_msg})
+            # NOTE: client already shows a system message — no SSE push needed
             self.send_json({'ok': True})
 
         # ── Webhook (agent → server) ──
