@@ -425,13 +425,6 @@ async function sendMsg() {
   _sending = true;
   input.value = '';
   autoResize(input);
-
-  // Optimistic render
-  const tempMsg = { id: 'tmp_' + Date.now(), type: 'message', from: 'user', content, timestamp: new Date().toISOString() };
-  allMessages.push(tempMsg);
-  appendMsgEl(tempMsg, true);
-
-  // Show typing indicator
   showTyping(true);
 
   try {
@@ -440,11 +433,23 @@ async function sendMsg() {
       headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
       body: JSON.stringify({ content })
     });
-    if (!r.ok) throw new Error();
+    const data = r.ok ? await r.json() : null;
+    // Render AFTER server confirms — avoids duplicate with any SSE echo
+    const msg = {
+      id: data?.message_id || ('tmp_' + Date.now()),
+      type: 'message', from: 'user', content,
+      timestamp: new Date().toISOString()
+    };
+    allMessages.push(msg);
+    appendMsgEl(msg, true);
   } catch {
-    // Message stored in inbox even if agent isn't immediately triggered
+    // Fallback: render anyway so user sees their message
+    const msg = { id: 'tmp_' + Date.now(), type: 'message', from: 'user', content, timestamp: new Date().toISOString() };
+    allMessages.push(msg);
+    appendMsgEl(msg, true);
   } finally {
     _sending = false;
+    showTyping(false);
   }
 }
 
