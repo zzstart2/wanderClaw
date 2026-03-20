@@ -1074,6 +1074,19 @@
       const data = await res.json();
 
       if (data.success) {
+        // Auto-login so user arrives at /chat already authenticated
+        try {
+          const loginRes = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: userName, password: userPassword })
+          });
+          const loginData = await loginRes.json();
+          if (loginData.token) {
+            localStorage.setItem('wanderclaw_token', loginData.token);
+            localStorage.setItem('wanderclaw_user', JSON.stringify(loginData.user));
+          }
+        } catch (_) {}
         showSuccess(data, agentName, appId);
       } else {
         document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
