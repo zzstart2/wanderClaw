@@ -766,7 +766,10 @@
       </div>
       <div class="card-footer">
         <button class="btn btn-ghost" onclick="goStep(1)">← 返回</button>
-        <button class="btn btn-primary" onclick="validateFeishu()">下一步：个性化 →</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="skipFeishu()" title="跳过飞书配置，仅使用网页版">跳过飞书</button>
+          <button class="btn btn-primary" onclick="validateFeishu()">下一步：个性化 →</button>
+        </div>
       </div>
     </div>
 
@@ -887,7 +890,7 @@
             <span class="cred-label">你的 Agent ID</span>
             <span class="cred-val" id="displayAgentId">—</span>
           </div>
-          <div class="cred-row">
+          <div class="cred-row" id="displayAppIdRow">
             <span class="cred-label">飞书 App ID</span>
             <span class="cred-val" id="displayAppId">—</span>
           </div>
@@ -895,6 +898,12 @@
             <span class="cred-label">部署时间</span>
             <span class="cred-val" id="displayTime">—</span>
           </div>
+        </div>
+
+        <div style="margin-top:20px;text-align:center">
+          <a href="/chat" style="display:inline-flex;align-items:center;gap:6px;padding:12px 28px;background:var(--accent);color:white;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none">
+            🦐 开始和虾游对话 →
+          </a>
         </div>
       </div>
     </div>
@@ -974,11 +983,17 @@
     const errEl = document.getElementById('feishuError');
     errEl.style.display = 'none';
 
-    if (!appId) { showError('feishuError', '请填写 App ID'); return; }
+    if (!appId) { showError('feishuError', '请填写 App ID，或点「跳过飞书」仅使用网页版'); return; }
     if (!appId.startsWith('cli_')) { showError('feishuError', 'App ID 格式不对，应以 cli_ 开头'); return; }
     if (!appSecret) { showError('feishuError', '请填写 App Secret'); return; }
     if (appSecret.length < 8) { showError('feishuError', 'App Secret 长度不对，请重新复制'); return; }
 
+    goStep(3);
+  }
+
+  function skipFeishu() {
+    document.getElementById('feishuAppId').value = '';
+    document.getElementById('feishuAppSecret').value = '';
     goStep(3);
   }
 
@@ -1083,7 +1098,11 @@
     document.getElementById('successMsg').textContent =
       agentName + ' 已经在服务器上启动了，随时准备出发探索 🚀';
     document.getElementById('displayAgentId').textContent = data.agent_id || '—';
-    document.getElementById('displayAppId').textContent = appId.slice(0, 8) + '••••';
+    if (appId) {
+      document.getElementById('displayAppId').textContent = appId.slice(0, 8) + '••••';
+    } else {
+      document.getElementById('displayAppIdRow').style.display = 'none';
+    }
     document.getElementById('displayTime').textContent = new Date().toLocaleString('zh-CN');
   }
 

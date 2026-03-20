@@ -60,7 +60,7 @@ def verify_password(password, stored_hash, salt):
 def create_session(user_id, remember=False):
     token = secrets.token_hex(32)
     sessions = load_json(SESSIONS_FILE, {})
-    expires = None if remember else (time.time() + 30 * 86400)
+    expires = time.time() + (30 * 86400 if remember else 86400)
     sessions[token] = {
         'user_id': user_id,
         'expires': expires,
