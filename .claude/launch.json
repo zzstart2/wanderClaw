@@ -6,6 +6,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "3456", "--directory", "dashboard"],
       "port": 3456
+    },
+    {
+      "name": "wanderclaw-onboarding",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "3457", "--directory", "onboarding"],
+      "port": 3457
     }
   ]
 }
