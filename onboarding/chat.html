@@ -322,11 +322,7 @@ function appendMsgEl(msg, animate = true) {
   const feed = document.getElementById('msgFeed');
 
   // DOM-level dedup: never render the same message ID twice
-  if (msg.id && feed.querySelector(`[data-msg-id="${CSS.escape(msg.id)}"]`)) {
-    console.warn('[dedup] skipped duplicate render:', msg.id, msg.content);
-    return;
-  }
-  console.log('[appendMsgEl]', msg.id, msg.from, msg.content, new Error().stack.split('\n')[2]);
+  if (msg.id && feed.querySelector(`[data-msg-id="${CSS.escape(msg.id)}"]`)) return;
 
   // Remove empty state
   document.getElementById('emptyState').style.display = 'none';
@@ -505,8 +501,10 @@ function connectSSE() {
     try {
       const event = JSON.parse(e.data);
       if (event.type === 'message' && event.data) {
-        // Dedup: skip if ID already in allMessages
         const incoming = event.data;
+        // Skip user messages via SSE — already rendered optimistically in sendMsg
+        if (incoming.from === 'user') return;
+        // Dedup: skip if ID already in allMessages
         if (incoming.id && allMessages.some(m => m.id === incoming.id)) return;
         allMessages.push(incoming);
         showTyping(false);

@@ -177,6 +177,9 @@ def outbox_poller():
                     # 先清空，再处理（防止重复）
                     save_json(outbox_f, [])
                     for msg in msgs:
+                        # Skip user-originated messages echoed by openclaw — client renders them optimistically
+                        if msg.get('from') == 'user':
+                            continue
                         stored = store_message(user_id, msg)
                         push_sse(user_id, {'type': 'message', 'data': stored})
                 except Exception:
