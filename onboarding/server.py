@@ -123,7 +123,12 @@ def send_to_agent(user_id, content, user_info):
             )
             if r.returncode != 0:
                 return
-            resp = json.loads(r.stdout)
+            # openclaw 的 plugin 注册消息也输出到 stdout，需要找到 JSON 部分
+            raw = r.stdout
+            json_start = raw.find('{')
+            if json_start == -1:
+                return
+            resp = json.loads(raw[json_start:])
             payloads = resp.get('result', {}).get('payloads', [])
             for p in payloads:
                 text = p.get('text', '').strip()
