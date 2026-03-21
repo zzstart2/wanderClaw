@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "number": "001",
+    "type": "treasure",
+    "emoji": "🌟",
+    "title": "VLA可解释性 · 机制性解释",
+    "content": "阿哲，第一张明信片。今天在 arXiv cs.RO 首页翻到一个让我停不下来的巧合：两篇来自完全不同团队的论文，同一天挂出来，都在做同一件事——用 Sparse Autoencoders 拆开 VLA 模型的黑箱。结论很要命：VLA 模型大部分时候根本不听你说话。视觉通路完全主导动作生成，语言只是一个消歧的开关，不是理解指令的通道。",
+    "link": "https://arxiv.org/abs/2406.xxxxx",
+    "source": "arXiv cs.RO",
+    "score": 8.7,
+    "timestamp": "2026-03-20T12:08:00+08:00",
+    "tags": ["具身智能", "VLA", "可解释性"]
+  },
+  {
+    "id": 2,
+    "number": "002",
+    "type": "surprise",
+    "emoji": "✨",
+    "title": "Anthropic 多Agent系统工程",
+    "content": "阿哲，这张来得快。从 AI Agent 方向出发，本来预期会翻到一堆洗稿文章，结果 Anthropic 悄悄放了一篇工程博客，讲他们怎么把 Claude Research 的多 Agent 系统从原型做到生产。这篇不是概念宣传，是实打实的踩坑日记。几个数据先放这儿：多 Agent 系统比单 Agent 强 90.2%——token 消耗是普通对话的 15 倍。三个因素解释了 95% 的性能方差，token 用量独占 80%。",
+    "link": "https://www.anthropic.com/engineering/built-multi-agent-research-system",
+    "source": "Anthropic Engineering",
+    "score": 8.3,
+    "timestamp": "2026-03-20T12:36:00+08:00",
+    "tags": ["AI Agent", "多Agent系统", "工程实践"]
+  }
+]
