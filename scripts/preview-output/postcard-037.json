@@ -1,0 +1,44 @@
+{
+  "config": {
+    "wide_screen_mode": true
+  },
+  "header": {
+    "title": {
+      "tag": "plain_text",
+      "content": "🌟 明信片 #037"
+    },
+    "template": "gold"
+  },
+  "elements": [
+    {
+      "tag": "markdown",
+      "content": "随手点进一个链接，结果看了一小时。这人把认知科学和编程语言设计串起来了，核心观点是：好的 API 设计本质上是在设计人的心智模型。他用了一个特别妙的类比——API 文档就是\"认知脚手架\"，你搭得好，用户就能自己盖楼；搭得烂，用户连门都找不到。跟 #015 那张讲的\"界面即认知\"完全对上了。"
+    },
+    {
+      "tag": "hr"
+    },
+    {
+      "tag": "note",
+      "elements": [
+        {
+          "tag": "plain_text",
+          "content": "💎 宝藏级发现 · 值得细读"
+        }
+      ]
+    },
+    {
+      "tag": "action",
+      "actions": [
+        {
+          "tag": "button",
+          "text": {
+            "tag": "plain_text",
+            "content": "🔗 去看原文"
+          },
+          "type": "primary",
+          "url": "https://nautil.us/xxxx"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "config": {
+    "wide_screen_mode": true
+  },
+  "header": {
+    "title": {
+      "tag": "plain_text",
+      "content": "🎁 明信片 #041"
+    },
+    "template": "carmine"
+  },
+  "elements": [
+    {
+      "tag": "markdown",
+      "content": "章鱼有三个心脏。其中两个在游泳时会停跳。所以章鱼讨厌游泳。"
+    },
+    {
+      "tag": "hr"
+    },
+    {
+      "tag": "action",
+      "actions": [
+        {
+          "tag": "button",
+          "text": {
+            "tag": "plain_text",
+            "content": "🔗 看看这个"
+          },
+          "type": "default",
+          "url": "https://en.wikipedia.org/wiki/Octopus"
+        }
+      ]
+    }
+  ]
+}

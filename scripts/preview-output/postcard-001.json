@@ -1,0 +1,44 @@
+{
+  "schema": "2.0",
+  "config": {
+    "enable_forward": true,
+    "update_multi": true
+  },
+  "header": {
+    "title": {
+      "tag": "plain_text",
+      "content": "✨ 明信片 #001"
+    },
+    "template": "violet"
+  },
+  "body": {
+    "direction": "vertical",
+    "padding": "12px 16px",
+    "elements": [
+      {
+        "tag": "markdown",
+        "content": "法国航母戴高乐号正在地中海秘密行动，结果一个水兵用Strava记录了甲板跑步，直接把航母实时坐标暴露了。Le Monde的记者就这么定位到了一整个航母战斗群。健身app干掉了军事机密，这大概是2026年最荒诞的安全事件。",
+        "text_size": "normal"
+      },
+      {
+        "tag": "hr"
+      },
+      {
+        "tag": "action",
+        "actions": [
+          {
+            "tag": "button",
+            "text": {
+              "tag": "plain_text",
+              "content": "🔗 去看原文"
+            },
+            "type": "primary",
+            "multi_url": {
+              "url": "https://www.lemonde.fr/en/international/article/2026/03/20/stravaleaks-france-s-aircraft-carrier-located-in-real-time-by-le-monde-through-fitness-app_6751640_4.html"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

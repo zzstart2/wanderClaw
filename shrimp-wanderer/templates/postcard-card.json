@@ -1,0 +1,188 @@
+{
+  "_comment": "飞书消息卡片模板 v2.0 — 虾游明信片",
+  "_usage": "替换 {{变量}} 后通过飞书 API 发送 interactive 类型消息",
+
+  "普通明信片": {
+    "schema": "2.0",
+    "config": {
+      "enable_forward": true,
+      "update_multi": true
+    },
+    "header": {
+      "title": {
+        "tag": "plain_text",
+        "content": "🦐 明信片 #{{number}}"
+      },
+      "template": "turquoise"
+    },
+    "body": {
+      "direction": "vertical",
+      "padding": "12px 16px",
+      "elements": [
+        {
+          "tag": "markdown",
+          "content": "{{content}}",
+          "text_size": "normal"
+        },
+        {
+          "tag": "hr"
+        },
+        {
+          "tag": "action",
+          "actions": [
+            {
+              "tag": "button",
+              "text": {
+                "tag": "plain_text",
+                "content": "🔗 去看原文"
+              },
+              "type": "primary",
+              "multi_url": {
+                "url": "{{link}}"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+
+  "惊喜明信片": {
+    "schema": "2.0",
+    "config": {
+      "enable_forward": true,
+      "update_multi": true
+    },
+    "header": {
+      "title": {
+        "tag": "plain_text",
+        "content": "✨ 明信片 #{{number}}"
+      },
+      "template": "violet"
+    },
+    "body": {
+      "direction": "vertical",
+      "padding": "12px 16px",
+      "elements": [
+        {
+          "tag": "markdown",
+          "content": "{{content}}",
+          "text_size": "normal"
+        },
+        {
+          "tag": "hr"
+        },
+        {
+          "tag": "action",
+          "actions": [
+            {
+              "tag": "button",
+              "text": {
+                "tag": "plain_text",
+                "content": "🔗 去看原文"
+              },
+              "type": "primary",
+              "multi_url": {
+                "url": "{{link}}"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+
+  "宝藏明信片": {
+    "schema": "2.0",
+    "config": {
+      "enable_forward": true,
+      "update_multi": true
+    },
+    "header": {
+      "title": {
+        "tag": "plain_text",
+        "content": "🌟 明信片 #{{number}}"
+      },
+      "subtitle": {
+        "tag": "plain_text",
+        "content": "💎 宝藏级发现 · 值得细读"
+      },
+      "template": "gold"
+    },
+    "body": {
+      "direction": "vertical",
+      "padding": "12px 16px",
+      "elements": [
+        {
+          "tag": "markdown",
+          "content": "{{content}}",
+          "text_size": "normal"
+        },
+        {
+          "tag": "hr"
+        },
+        {
+          "tag": "action",
+          "actions": [
+            {
+              "tag": "button",
+              "text": {
+                "tag": "plain_text",
+                "content": "🔗 去看原文"
+              },
+              "type": "primary",
+              "multi_url": {
+                "url": "{{link}}"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+
+  "彩蛋明信片": {
+    "schema": "2.0",
+    "config": {
+      "enable_forward": true,
+      "update_multi": true
+    },
+    "header": {
+      "title": {
+        "tag": "plain_text",
+        "content": "🎁 明信片 #{{number}}"
+      },
+      "template": "carmine"
+    },
+    "body": {
+      "direction": "vertical",
+      "padding": "12px 16px",
+      "elements": [
+        {
+          "tag": "markdown",
+          "content": "{{content}}",
+          "text_size": "normal"
+        },
+        {
+          "tag": "hr"
+        },
+        {
+          "tag": "action",
+          "actions": [
+            {
+              "tag": "button",
+              "text": {
+                "tag": "plain_text",
+                "content": "🔗 看看这个"
+              },
+              "type": "default",
+              "multi_url": {
+                "url": "{{link}}"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

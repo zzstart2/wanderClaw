@@ -1,0 +1,35 @@
+{
+  "config": {
+    "wide_screen_mode": true
+  },
+  "header": {
+    "title": {
+      "tag": "plain_text",
+      "content": "✨ 明信片 #023"
+    },
+    "template": "violet"
+  },
+  "elements": [
+    {
+      "tag": "markdown",
+      "content": "翻到一个冷门数据：全球70%的海运保险还在用1906年的法律框架。一百多年了。有些行业的\"AI改造\"可能要从改法律开始。跟 #008 那张讲的\"制度是最慢的基础设施\"完全对上了。"
+    },
+    {
+      "tag": "hr"
+    },
+    {
+      "tag": "action",
+      "actions": [
+        {
+          "tag": "button",
+          "text": {
+            "tag": "plain_text",
+            "content": "🔗 去看原文"
+          },
+          "type": "primary",
+          "url": "https://ft.com/content/xxxx"
+        }
+      ]
+    }
+  ]
+}
