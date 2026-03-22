@@ -13,17 +13,31 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 
-# ── 路径配置 ──
-OPENCLAW_CONFIG = Path('/root/.openclaw/openclaw.json')
-USERS_BASE      = Path('/root/wanderClaw/users')
-TEMPLATE_DIR    = Path(__file__).parent / 'templates'
-DATA_DIR        = Path(__file__).parent / 'data'
-STATIC_DIR      = Path(__file__).parent
-INVITES_FILE    = DATA_DIR / 'invites.json'
-USERS_FILE      = DATA_DIR / 'users.json'
-SESSIONS_FILE   = DATA_DIR / 'sessions.json'
-MESSAGES_DIR    = DATA_DIR / 'messages'
-PORT = 8080
+# ── 路径配置（支持环境变量，兼容本地开发和 ECS）──
+_HERE = Path(__file__).parent
+
+# ECS 默认路径；本地开发可通过环境变量覆盖
+OPENCLAW_CONFIG = Path(os.environ.get('OPENCLAW_CONFIG',
+    str(_HERE.parent.parent / '.openclaw' / 'openclaw.json')
+    if not Path('/root/.openclaw/openclaw.json').exists()
+    else '/root/.openclaw/openclaw.json'))
+
+USERS_BASE = Path(os.environ.get('WANDERCLAW_USERS_BASE',
+    str(_HERE / 'local_users')
+    if not Path('/root/wanderClaw/users').exists()
+    else '/root/wanderClaw/users'))
+
+TEMPLATE_DIR = _HERE / 'templates'
+DATA_DIR     = _HERE / 'data'
+STATIC_DIR   = _HERE
+INVITES_FILE  = DATA_DIR / 'invites.json'
+USERS_FILE    = DATA_DIR / 'users.json'
+SESSIONS_FILE = DATA_DIR / 'sessions.json'
+MESSAGES_DIR  = DATA_DIR / 'messages'
+PORT = int(os.environ.get('PORT', 8080))
+
+# 本地模式：openclaw 不可用时降级
+_OPENCLAW_AVAILABLE = bool(shutil.which('openclaw'))
 
 # ── JSON 工具 ──
 def load_json(path, default=None):
@@ -112,6 +126,9 @@ def get_messages(user_id, limit=100):
 
 def send_to_agent(user_id, content, user_info):
     """调用 openclaw agent 触发对话，异步捕获回复写入 outbox"""
+    if not _OPENCLAW_AVAILABLE:
+        print(f"[send_to_agent] openclaw 不可用（本地模式），跳过 agent 调用")
+        return False
     agent_id = user_info.get('agent_id', user_id)
     workspace = Path(user_info.get('workspace', ''))
 
@@ -122,11 +139,13 @@ def send_to_agent(user_id, content, user_info):
                 capture_output=True, text=True, timeout=120
             )
             if r.returncode != 0:
+                print(f"[send_to_agent] openclaw 返回非零: {r.returncode}\nstderr: {r.stderr[:200]}")
                 return
             # openclaw 的 plugin 注册消息也输出到 stdout，需要找到 JSON 部分
             raw = r.stdout
             json_start = raw.find('{')
             if json_start == -1:
+                print(f"[send_to_agent] stdout 中无 JSON: {raw[:200]}")
                 return
             resp = json.loads(raw[json_start:])
             payloads = resp.get('result', {}).get('payloads', [])
@@ -144,8 +163,9 @@ def send_to_agent(user_id, content, user_info):
                     'timestamp': datetime.now().isoformat()
                 })
                 save_json(outbox_f, outbox)
-        except Exception:
-            pass
+                print(f"[send_to_agent] 回复已写入 outbox: {text[:60]}")
+        except Exception as e:
+            print(f"[send_to_agent] 异常: {e}")
 
     threading.Thread(target=_run, daemon=True, name=f'AgentCall-{agent_id}').start()
     return True
@@ -324,14 +344,14 @@ def provision_user(payload):
         'heartbeat': {'every': '30m', 'activeHours': {'start': '08:00', 'end': '23:00'}},
         'identity': {'name': agent_name, 'emoji': agent_emoji}
     }
-    if feishu_app_id:
-        entry['channel'] = {'feishu': {'account': agent_id}}
+    # 注意：不在 agent entry 里写 channel/feishu 字段（openclaw 新版不支持）
+    # feishu 账号已在 config['channels']['feishu']['accounts'] 中配置
     agents_list.append(entry)
     config['agents']['list'] = agents_list
-    save_json(OPENCLAW_CONFIG, config)
+    if OPENCLAW_CONFIG.exists() or OPENCLAW_CONFIG.parent.exists():
+        save_json(OPENCLAW_CONFIG, config)
 
-    try: subprocess.run(['openclaw','reload'], timeout=10, check=False)
-    except Exception: pass
+    # openclaw gateway 会自动热加载配置，无需手动 reload
 
     # 存储用户（含密码哈希）
     users = load_json(USERS_FILE, {})
@@ -462,6 +482,8 @@ class Handler(BaseHTTPRequestHandler):
         elif path == '/api/invites':
             self.send_json(load_json(INVITES_FILE, {}))
         elif path == '/api/pairing/list':
+            if not _OPENCLAW_AVAILABLE:
+                self.send_json({'ok': False, 'message': 'openclaw 不可用（本地模式）'}); return
             try:
                 r = subprocess.run(['openclaw','pairing','list','--json'], capture_output=True, text=True, timeout=6)
                 try: data = json.loads(r.stdout)
