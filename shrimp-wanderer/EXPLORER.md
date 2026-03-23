@@ -90,7 +90,17 @@
 
 明信片写好后：
 1. 保存到 `shrimp-wanderer/postcards/[编号]-[主题].md`
-2. 发飞书消息给阿哲（用飞书消息工具推送）
+2. **写入 outbox.json**（重要）：读取 workspace 根目录的 `outbox.json`，追加以下对象，再写回文件。如文件不存在或内容为空则初始化为 `[]`：
+   ```json
+   {
+     "type": "postcard",
+     "from": "agent",
+     "content": "<明信片全文，包含标题、正文、链接>",
+     "score": <综合评分数字，如 8.2>,
+     "direction": "<本次探索方向>",
+     "url": "<原文主链接>"
+   }
+   ```
 3. 更新 state.json：postcard_count +1，last_postcard 更新时间，daily_message_count +1
 
 ### 评分 5-7 → 探索日记 + 归档

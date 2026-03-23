@@ -320,11 +320,12 @@ def provision_user(payload):
     workspace = USERS_BASE / agent_id
     workspace.mkdir(parents=True, exist_ok=True)
 
-    # EXPLORER.md 模板
-    src = TEMPLATE_DIR / 'EXPLORER.md'
-    if src.exists():
-        c = src.read_text('utf-8').replace('{{USER_NAME}}', user_name).replace('{{AGENT_NAME}}', agent_name)
-        (workspace / 'EXPLORER.md').write_text(c, 'utf-8')
+    # 模板文件
+    for tpl_name in ['EXPLORER.md', 'HEARTBEAT.md']:
+        src = TEMPLATE_DIR / tpl_name
+        if src.exists():
+            c = src.read_text('utf-8').replace('{{USER_NAME}}', user_name).replace('{{AGENT_NAME}}', agent_name)
+            (workspace / tpl_name).write_text(c, 'utf-8')
 
     save_json(workspace / 'interest-graph.json', build_interest_graph(interests))
     save_json(workspace / 'state.json', build_state(user_name))
