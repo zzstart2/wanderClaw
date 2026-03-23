@@ -220,7 +220,8 @@ def outbox_poller():
                         if msg.get('from') == 'user':
                             continue
                         stored = store_message(user_id, msg)
-                        push_sse(user_id, {'type': 'message', 'data': stored})
+                        sse_type = stored.get('type', 'message')  # 'postcard' or 'message'
+                        push_sse(user_id, {'type': sse_type, 'data': stored})
                 except Exception:
                     pass
         except Exception:
@@ -445,6 +446,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send_file(STATIC_DIR / 'chat.html')
         elif path == '/admin':
             self.send_file(STATIC_DIR / 'admin.html')
+        elif path == '/archive':
+            self.send_file(STATIC_DIR / 'archive.html')
 
         # Auth
         elif path == '/api/auth/me':
@@ -482,6 +485,31 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(safe)
         elif path == '/api/invites':
             self.send_json(load_json(INVITES_FILE, {}))
+        # Archive
+        elif path == '/api/archive':
+            uid, u = self.auth_user()
+            if not uid: return
+            workspace = Path(u.get('workspace', ''))
+
+            # All postcard messages (newest last)
+            all_msgs = get_messages(uid, 500)
+            postcards = [m for m in all_msgs if m.get('type') == 'postcard']
+
+            # Exploration logs from workspace/shrimp-wanderer/exploration-log/
+            logs = []
+            for log_dir in [workspace / 'shrimp-wanderer' / 'exploration-log',
+                            workspace / 'exploration-log']:
+                if log_dir.exists():
+                    for f in sorted(log_dir.glob('*.md'), reverse=True)[:14]:
+                        rounds = f.read_text('utf-8', errors='replace')
+                        logs.append({'date': f.stem, 'content': rounds})
+                    break
+
+            state = load_json(workspace / 'state.json', {})
+            interests = load_json(workspace / 'interest-graph.json', {})
+            self.send_json({'postcards': postcards, 'exploration_logs': logs,
+                            'state': state, 'interests': interests})
+
         elif path == '/api/pairing/list':
             if not _OPENCLAW_AVAILABLE:
                 self.send_json({'ok': False, 'message': 'openclaw 不可用（本地模式）'}); return
@@ -640,6 +668,78 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json({'success': False, 'message': str(e)}, 500)
 
         # ── Admin ──
+        # Archive inject (debug)
+        elif path == '/api/archive/inject-postcard':
+            uid, u = self.auth_user()
+            if not uid: return
+            direction = body.get('direction', '具身智能')
+            score     = float(body.get('score', 8.2))
+
+            # Read current postcard_count from state.json to get the next number
+            workspace = Path(u.get('workspace', ''))
+            state = load_json(workspace / 'state.json', {})
+            num = state.get('postcard_count', 0) + 1
+
+            # Pick demo content based on direction
+            demo_texts = {
+                '具身智能': (
+                    f'在 arXiv cs.RO 首页翻到了一个很有意思的发现：两个完全不同的团队，同一天挂出来的论文，都在用 '
+                    f'Sparse Autoencoders 拆开 VLA 模型的黑箱。\n\n'
+                    f'先说结论：VLA 模型大部分时候根本不听你说话。语言不是"理解指令"的通道，而是一个消歧的开关。'
+                    f'真正驱动动作的是视觉特征。这有点反直觉——我们以为它在"理解"语言，实际上它在"匹配"语言。\n\n'
+                    f'🔗 https://arxiv.org/abs/2501.00001'
+                ),
+                'AI Agent': (
+                    f'Anthropic 悄悄放了一篇工程博客，讲他们怎么把 Claude Research 的多 Agent 系统从原型做到生产。'
+                    f'不是概念宣传，是实打实的踩坑日记。\n\n'
+                    f'几个数据：多 Agent 系统比单 Agent 强 90.2%，token 消耗是普通对话的 15 倍。'
+                    f'三个因素解释了 95% 的性能方差，token 用量独占 80%。\n\n'
+                    f'这说明什么？scaling 在 Agent 系统层面依然有效，但代价是显性的。\n\n'
+                    f'🔗 https://www.anthropic.com/research/multi-agent-systems'
+                ),
+                '基础科学': (
+                    f'Nature 上周有篇关于涌现现象的综述，作者把"涌现"拆成了两种：强涌现（genuinely novel）和弱涌现'
+                    f'（predictable in principle）。\n\n'
+                    f'有意思的观点：LLM 的很多"能力涌现"可能是弱涌现——在足够细粒度的分析下，它们从来没有真正消失过，'
+                    f'只是我们的评估指标太粗糙没有检测到。换句话说，不是模型突然学会了什么，是我们的量尺刻度太大。\n\n'
+                    f'🔗 https://www.nature.com/articles/s41586-024-00001-0'
+                ),
+                '产品设计': (
+                    f'Figma 新发布的 AI 功能设计原则文档值得读一遍。里面有句话印象深刻：'
+                    f'"AI 不是魔法，而是一个有时会犯错的协作者。UI 设计的任务是让这种不确定性对用户可见。"\n\n'
+                    f'这其实是一个更宽泛的设计命题：怎么给概率性系统设计可信度的表达？不是简单地加置信度百分比，'
+                    f'而是在交互流程里内嵌"这里需要你再确认一下"的节点。\n\n'
+                    f'🔗 https://www.figma.com/blog/ai-design-principles'
+                ),
+                '生物科技': (
+                    f'一篇关于 AlphaFold 3 在药物设计中实际落地的评估报告。结论比预期悲观：在 40% 的案例里，'
+                    f'预测结构和实验结构的偏差大到足以让后续的虚拟筛选完全跑偏。\n\n'
+                    f'但这不是说 AF3 没用，而是说我们需要更好的"预测可信度过滤器"——在进入湿实验室之前，'
+                    f'先问一句这个预测值得信吗。\n\n'
+                    f'🔗 https://www.biorxiv.org/content/alphafold3-evaluation'
+                ),
+            }
+            content_body = demo_texts.get(direction, demo_texts.get('AI Agent', ''))
+            content = f'🦐 明信片 #{num:03d}\n\n{content_body}'
+
+            postcard = {
+                'type': 'postcard', 'from': 'agent',
+                'content': content,
+                'score': round(score, 1),
+                'direction': direction,
+                'url': content_body.split('🔗 ')[-1].strip().split('\n')[0] if '🔗' in content_body else '',
+                'postcard_id': str(num),
+                'image_prompt': f'与{direction}相关的水彩插画场景',
+            }
+            stored = store_message(uid, postcard)
+            push_sse(uid, {'type': 'postcard', 'data': stored})
+
+            # Update postcard_count in state.json
+            state['postcard_count'] = num
+            save_json(workspace / 'state.json', state)
+
+            self.send_json({'ok': True, 'postcard_id': num, 'message_id': stored.get('id'), 'message': stored})
+
         elif path == '/api/admin/generate-invites':
             count = min(int(body.get('count', 5)), 20)
             self.send_json({'codes': generate_invites(count)})

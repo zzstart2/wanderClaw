@@ -100,49 +100,75 @@
       border-radius: 10px; padding: 4px 12px; margin: 8px 0;
     }
 
-    /* ── Postcard ── */
-    .postcard-wrap { padding: 6px 20px; }
-    .postcard-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; overflow: hidden;
-      border-left: 3px solid var(--accent);
-      max-width: 560px;
+    /* ── Postcard flip card ── */
+    .postcard-wrap { padding: 6px 20px 6px 52px; }
+    .pc-slot {
+      perspective: 1200px;
+      width: 260px; height: 364px;  /* 5:7 portrait */
     }
-    .postcard-header {
-      padding: 12px 16px 10px;
-      display: flex; align-items: center; gap: 8px;
-      border-bottom: 1px solid var(--border);
+    .pc-inner {
+      position: relative; width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(.4,0,.2,1);
+      cursor: pointer; border-radius: 12px;
     }
-    .postcard-icon { font-size: 18px; }
-    .postcard-num { font-size: 11px; font-weight: 700; color: var(--accent); font-family: monospace; }
-    .postcard-dir { font-size: 13px; font-weight: 600; flex: 1; }
-    .postcard-score {
-      font-size: 11px; font-weight: 700; padding: 2px 8px;
-      border-radius: 8px;
+    .pc-inner.flipped { transform: rotateY(180deg); }
+    .pc-front, .pc-back {
+      position: absolute; width: 100%; height: 100%;
+      border-radius: 12px; overflow: hidden;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
     }
-    .score-high { background: rgba(98,217,160,0.12); color: var(--accent3); border: 1px solid rgba(98,217,160,0.2); }
-    .score-mid  { background: rgba(94,184,255,0.12); color: var(--accent2); border: 1px solid rgba(94,184,255,0.2); }
-    .score-low  { background: rgba(124,111,224,0.12); color: var(--accent); border: 1px solid rgba(124,111,224,0.2); }
-    .postcard-body {
-      padding: 14px 16px; font-size: 13px; line-height: 1.75;
-      color: var(--text2); max-height: 160px; overflow: hidden;
-      position: relative; transition: max-height 0.4s ease;
+    .pc-front { background: var(--surface2); }
+    .pc-front-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
     }
-    .postcard-body.expanded { max-height: 2000px; }
-    .postcard-body:not(.expanded)::after {
-      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
-      height: 40px; background: linear-gradient(transparent, var(--surface));
+    .pc-emoji { font-size: 60px; opacity: .75; z-index: 1; }
+    .pc-flip-hint {
+      position: absolute; inset: 0; border-radius: 12px;
+      background: rgba(0,0,0,.35); display: flex; align-items: center;
+      justify-content: center; opacity: 0; transition: opacity .2s;
+      font-size: 13px; font-weight: 600; color: white;
     }
-    .postcard-footer {
-      padding: 8px 16px 10px;
-      display: flex; justify-content: space-between; align-items: center;
+    .pc-inner:hover .pc-flip-hint { opacity: 1; }
+    .pc-inner.flipped:hover .pc-flip-hint { opacity: 0; }
+    .pc-front-meta {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,.55));
+      padding: 24px 12px 10px;
+      display: flex; justify-content: space-between; align-items: flex-end;
     }
-    .postcard-time { font-size: 10px; color: var(--text3); }
-    .expand-btn {
-      font-size: 11px; color: var(--accent2); cursor: pointer;
-      background: none; border: none; font-family: inherit; padding: 0;
+    .pc-front-num { font-family: monospace; font-size: 12px; font-weight: 700; color: rgba(255,255,255,.9); }
+    .pc-front-dir { font-size: 11px; color: rgba(255,255,255,.7); max-width: 55%; text-align: right; }
+    .pc-score-badge {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
+      border-radius: 10px; padding: 3px 8px;
+      font-size: 11px; font-weight: 700; font-family: monospace;
     }
-    .expand-btn:hover { text-decoration: underline; }
+    .score-high { color: #ffd700; }
+    .score-mid  { color: #a8e063; }
+    .score-low  { color: #8888aa; }
+    .pc-back {
+      transform: rotateY(180deg);
+      background: var(--surface2); border: 1px solid var(--border);
+      display: flex; flex-direction: column;
+    }
+    .pc-back-scroll {
+      flex: 1; overflow-y: auto; padding: 14px 14px 0;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .pc-back-header { font-size: 11px; font-weight: 700; color: var(--accent); font-family: monospace; margin-bottom: 8px; }
+    .pc-back-text { font-size: 12px; line-height: 1.65; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+    .pc-back-text a { color: var(--accent2); text-decoration: none; }
+    .pc-back-footer {
+      padding: 8px 12px; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+    }
+    .pc-back-ts { font-size: 10px; color: var(--text3); }
+    .pc-archive-link { font-size: 11px; color: var(--text3); text-decoration: none; }
+    .pc-archive-link:hover { color: var(--accent2); }
 
     /* ── Input area ── */
     .input-area {
@@ -373,29 +399,82 @@ function renderBubble(msg) {
   return wrap;
 }
 
+// ── Direction palettes & emojis (shared with archive page) ──
+const PC_PALETTES = {
+  'AI Agent':['#667eea','#764ba2'],'具身智能':['#36d1dc','#5b86e5'],
+  '生物科技':['#11998e','#38ef7d'],'产品设计':['#f7971e','#ffd200'],
+  '半导体':['#e94560','#0f0c29'],'全球科技':['#2193b0','#6dd5ed'],
+  '医疗健康':['#56ab2f','#a8e063'],'自动驾驶':['#373b44','#4286f4'],
+  '基础科学':['#4e54c8','#8f94fb'],'科技财经':['#c94b4b','#4b134f'],
+  '气候能源':['#134e5e','#71b280'],'网络安全':['#141e30','#243b55'],
+};
+const PC_EMOJIS = {
+  'AI Agent':'🤖','具身智能':'🦾','生物科技':'🧬','产品设计':'🎨',
+  '半导体':'⚡','全球科技':'🌐','医疗健康':'💊','自动驾驶':'🚗',
+  '基础科学':'🔬','科技财经':'💹','气候能源':'🌏','网络安全':'🔐',
+};
+function pcColors(dir) {
+  const key = Object.keys(PC_PALETTES).find(k => (dir||'').includes(k));
+  return key ? PC_PALETTES[key] : ['#667eea','#764ba2'];
+}
+function pcEmoji(dir) {
+  const key = Object.keys(PC_EMOJIS).find(k => (dir||'').includes(k));
+  return key ? PC_EMOJIS[key] : '🌊';
+}
+
 function renderPostcard(msg) {
-  const meta = msg.metadata || {};
-  const score = meta.score || 0;
-  const scoreClass = score >= 8.5 ? 'score-high' : score >= 7.5 ? 'score-mid' : 'score-low';
+  // Normalise metadata: support both old {metadata:{score,direction}} and new {score,direction}
+  const meta   = msg.metadata || {};
+  const score  = msg.score ?? meta.score ?? 0;
+  const dir    = msg.direction ?? meta.direction ?? '';
+  const num    = msg.postcard_id ?? meta.postcard_num ?? null;
+  const numStr = num ? String(num).padStart(3,'0') : '???';
+  const scoreClass = score >= 8.5 ? 'score-high' : score >= 7 ? 'score-mid' : 'score-low';
+  const [c1, c2] = pcColors(dir);
+  const emoji  = pcEmoji(dir);
+
+  // Clean body text: strip header line, handle links
+  let body = escHtml(msg.content)
+    .replace(/^🦐 明信片 #\d+\s*\n*/m, '')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/🔗\s*(https?:\/\/\S+)/g,
+      '🔗 <a href="$1" target="_blank" rel="noopener" onclick="event.stopPropagation()">阅读原文 ↗</a>')
+    .replace(/\n/g, '<br>');
+
   const wrap = document.createElement('div');
   wrap.className = 'postcard-wrap';
   wrap.innerHTML = `
-    <div class="postcard-card">
-      <div class="postcard-header">
-        <span class="postcard-icon">📮</span>
-        ${meta.postcard_num ? `<span class="postcard-num">#${String(meta.postcard_num).padStart(3,'0')}</span>` : ''}
-        <span class="postcard-dir">${meta.direction || '知识探索'}</span>
-        ${score ? `<span class="postcard-score ${scoreClass}">${score}分</span>` : ''}
-      </div>
-      <div class="postcard-body" id="pb_${msg.id}">
-        ${escHtml(msg.content).replace(/\n/g,'<br>')}
-      </div>
-      <div class="postcard-footer">
-        <span class="postcard-time">${formatTime(msg.timestamp)}</span>
-        <button class="expand-btn" onclick="togglePostcard('${msg.id}', this)">展开全文 ↓</button>
+    <div class="pc-slot">
+      <div class="pc-inner" id="pci-${msg.id}">
+        <div class="pc-front" onclick="flipPc('${msg.id}')">
+          <div class="pc-front-placeholder" style="background:linear-gradient(135deg,${c1},${c2})">
+            <div class="pc-emoji">${emoji}</div>
+            <div class="pc-flip-hint">↺ 查看内容</div>
+          </div>
+          ${score ? `<div class="pc-score-badge ${scoreClass}">${score}分</div>` : ''}
+          <div class="pc-front-meta">
+            <span class="pc-front-num">#${numStr}</span>
+            <span class="pc-front-dir">${dir || '知识探索'}</span>
+          </div>
+        </div>
+        <div class="pc-back">
+          <div class="pc-back-scroll">
+            <div class="pc-back-header">🦐 明信片 #${numStr}</div>
+            <div class="pc-back-text">${body}</div>
+          </div>
+          <div class="pc-back-footer">
+            <span class="pc-back-ts">${formatTime(msg.timestamp)}</span>
+            <a href="/archive" class="pc-archive-link">在档案馆查看 →</a>
+          </div>
+        </div>
       </div>
     </div>`;
   return wrap;
+}
+
+function flipPc(id) {
+  const el = document.getElementById('pci-' + id);
+  if (el) el.classList.toggle('flipped');
 }
 
 function renderSystem(msg) {
@@ -406,15 +485,6 @@ function renderSystem(msg) {
   text.textContent = msg.content;
   wrap.appendChild(text);
   return wrap;
-}
-
-function togglePostcard(id, btn) {
-  const body = document.getElementById('pb_' + id);
-  if (body.classList.toggle('expanded')) {
-    btn.textContent = '收起 ↑';
-  } else {
-    btn.textContent = '展开全文 ↓';
-  }
 }
 
 // ── Send message ──
@@ -501,11 +571,9 @@ function connectSSE() {
   sseSource.onmessage = (e) => {
     try {
       const event = JSON.parse(e.data);
-      if (event.type === 'message' && event.data) {
+      if ((event.type === 'message' || event.type === 'postcard') && event.data) {
         const incoming = event.data;
-        // Skip user messages via SSE — already rendered optimistically in sendMsg
         if (incoming.from === 'user') return;
-        // Dedup: skip if ID already in allMessages
         if (incoming.id && allMessages.some(m => m.id === incoming.id)) return;
         allMessages.push(incoming);
         showTyping(false);
