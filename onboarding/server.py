@@ -395,8 +395,44 @@ def provision_user(payload):
     users[agent_id] = user_rec
     save_json(USERS_FILE, users)
 
+    # 注册探索 Cron 任务
+    cron_registered = 0
+    if _OPENCLAW_AVAILABLE:
+        explore_prompt = "读取你 workspace 下的 shrimp-wanderer/EXPLORER.md，按照其中的六步流程执行一次完整探索。"
+        scan_prompt = "执行一次轻度扫描：只检查核心水域的最新热门内容，5分钟内完成。有重大发现（评分≥8）才推送明信片，否则只归档。"
+
+        cron_jobs = [
+            {'name': f'{agent_id}-explore-am',  'cron': '0 10 * * *', 'stagger': '30m',  'msg': explore_prompt},
+            {'name': f'{agent_id}-explore-pm',  'cron': '0 15 * * *', 'stagger': '30m',  'msg': explore_prompt},
+            {'name': f'{agent_id}-scan-noon',   'cron': '0 12 * * *', 'stagger': '60m',  'msg': scan_prompt},
+            {'name': f'{agent_id}-scan-eve',    'cron': '0 20 * * *', 'stagger': '60m',  'msg': scan_prompt},
+        ]
+
+        for job in cron_jobs:
+            try:
+                r = subprocess.run([
+                    'openclaw', 'cron', 'add',
+                    '--name', job['name'],
+                    '--cron', job['cron'],
+                    '--agent', agent_id,
+                    '--session', 'isolated',
+                    '--model', 'cloudsway/MaaS_Sonnet_4',
+                    '--stagger', job['stagger'],
+                    '--message', job['msg'],
+                    '--tz', 'Asia/Shanghai',
+                    '--no-deliver',
+                ], capture_output=True, text=True, timeout=10)
+                if r.returncode == 0:
+                    cron_registered += 1
+                else:
+                    print(f"[provision] Cron 注册失败 {job['name']}: {r.stderr[:200]}")
+            except Exception as e:
+                print(f"[provision] Cron 注册异常 {job['name']}: {e}")
+
+        print(f"[provision] Cron 注册完成: {cron_registered}/{len(cron_jobs)} for {agent_id}")
+
     mark_invite_used(invite_code, agent_id)
-    return {'success': True, 'agent_id': agent_id, 'message': '配置成功'}
+    return {'success': True, 'agent_id': agent_id, 'message': '配置成功', 'cron_jobs': cron_registered}
 
 # ════════════════════════════════════════
 # ── HTTP Handler ──
