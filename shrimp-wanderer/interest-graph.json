@@ -22,9 +22,9 @@
       "topic": "AI产品设计",
       "weight": 0.8,
       "source": "user_profile",
-      "sub_topics": ["AI交互设计", "Prompt Engineering", "AI用户体验"],
-      "last_explored": null,
-      "explore_count": 0
+      "sub_topics": ["AI交互设计", "Prompt Engineering", "AI用户体验", "Agentic UX"],
+      "last_explored": "2026-03-24",
+      "explore_count": 1
     },
     {
       "topic": "思维模型",
