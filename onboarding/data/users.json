@@ -1,0 +1,20 @@
+{
+  "xiayou_测试用户a_0324": {
+    "agent_id": "xiayou_测试用户a_0324",
+    "user_name": "测试用户A",
+    "agent_name": "虾游",
+    "agent_emoji": "🦐",
+    "feishu_app_id": "",
+    "workspace": "/root/wanderClaw/users/xiayou_测试用户a_0324",
+    "interests": [
+      "🤖 AI Agent",
+      "🎨 产品设计",
+      "🔬 基础科学"
+    ],
+    "created_at": "2026-03-24T17:40:05.861842",
+    "invite_code": "D2B8-E037-9152",
+    "exploration_phase": "cold_start",
+    "password_hash": "eb925c370f6730a27ff9abe775bf4eaa6dba965dff33b79cd96dabe4d58b49fd",
+    "password_salt": "da8d2ccdf9a7b34cea49295b396f220d"
+  }
+}

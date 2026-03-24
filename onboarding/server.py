@@ -39,6 +39,8 @@ PORT = int(os.environ.get('PORT', 8080))
 # 本地模式：openclaw 不可用时降级
 _OPENCLAW_AVAILABLE = bool(shutil.which('openclaw'))
 
+ADMIN_TOKEN = os.environ.get('WANDERCLAW_ADMIN_TOKEN', 'wanderclaw-admin-2026')
+
 # ── JSON 工具 ──
 def load_json(path, default=None):
     try: return json.loads(Path(path).read_text('utf-8'))
@@ -430,6 +432,22 @@ def provision_user(payload):
                 print(f"[provision] Cron 注册异常 {job['name']}: {e}")
 
         print(f"[provision] Cron 注册完成: {cron_registered}/{len(cron_jobs)} for {agent_id}")
+
+    # 写入欢迎消息
+    welcome_msg = {
+        'type': 'message',
+        'from': 'agent',
+        'content': f'{user_name}，你好呀 👋\n\n我是虾游，一只在互联网上到处游的龙虾。\n\n已经知道你对什么感兴趣了，我这就出发去看看。第一张明信片很快就到——不过别急，好东西值得等。\n\n想聊什么随时说，我在的。'
+    }
+    store_message(agent_id, welcome_msg)
+
+    # 欢迎消息
+    welcome_msg = {
+        'type': 'message',
+        'from': 'agent',
+        'content': f'{user_name}，你好呀 👋\n\n我是虾游，一只在互联网上到处游的龙虾。\n\n已经知道你对什么感兴趣了，我这就出发去看看。第一张明信片很快就到——不过别急，好东西值得等。\n\n想聊什么随时说，我在的。'
+    }
+    store_message(agent_id, welcome_msg)
 
     mark_invite_used(invite_code, agent_id)
     return {'success': True, 'agent_id': agent_id, 'message': '配置成功', 'cron_jobs': cron_registered}

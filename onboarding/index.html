@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>🦐 领养你的虾游</title>
   <style>
     :root {
@@ -129,12 +129,12 @@
     }
 
     .card-hero {
-      padding: 32px 36px 24px;
+      padding: 24px 20px 20px;
       border-bottom: 1px solid var(--border);
     }
 
     .card-hero h2 {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
       margin-bottom: 6px;
     }
@@ -145,15 +145,17 @@
     }
 
     .card-body {
-      padding: 28px 36px;
+      padding: 20px;
     }
 
     .card-footer {
-      padding: 20px 36px;
+      padding: 16px 20px;
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     /* Inputs */
@@ -224,6 +226,7 @@
     }
 
     .btn-primary:hover { background: #6a5ed4; }
+    .btn-primary:active { transform: scale(0.98); background: #6a5ed4; }
     .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .btn-ghost {
@@ -233,6 +236,7 @@
     }
 
     .btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+    .btn-ghost:active { border-color: var(--text); color: var(--text); transform: scale(0.98); }
 
     /* Invite code */
     .invite-input-wrap {
@@ -347,7 +351,7 @@
     /* Interests */
     .interest-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 8px;
       margin-bottom: 12px;
     }
@@ -384,8 +388,10 @@
     }
 
     .emoji-opt {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      min-width: 44px;
+      height: 44px;
+      min-height: 44px;
       border-radius: 8px;
       background: var(--surface2);
       border: 2px solid var(--border);
@@ -397,7 +403,7 @@
       transition: all 0.2s;
     }
 
-    .emoji-opt:hover { border-color: var(--accent); }
+    .emoji-opt:active { border-color: var(--accent); transform: scale(0.95); }
     .emoji-opt.selected { border-color: var(--accent); background: rgba(124, 111, 224, 0.15); }
 
     /* Loading */
@@ -572,6 +578,14 @@
     }
 
     .interest-count span { color: var(--accent2); font-weight: 600; }
+
+    /* Desktop: expand to 3 columns */
+    @media (min-width: 640px) {
+      .interest-grid { grid-template-columns: repeat(3, 1fr); }
+      .card-hero { padding: 32px 36px 24px; }
+      .card-body { padding: 28px 36px; }
+      .card-footer { padding: 20px 36px; }
+    }
   </style>
 </head>
 <body>

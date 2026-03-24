@@ -43,16 +43,18 @@
       padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
       background: var(--surface2); color: var(--text2); font-size: 12px;
       font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;
+      min-height: 44px;
     }
-    .btn-explore:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-explore:active { border-color: var(--accent); color: var(--accent); transform: scale(0.98); }
     .btn-explore:disabled { opacity: 0.4; cursor: not-allowed; }
     .user-chip {
       padding: 5px 12px; background: var(--surface2);
       border: 1px solid var(--border); border-radius: 20px;
       font-size: 12px; color: var(--text2); cursor: pointer;
       display: flex; align-items: center; gap: 5px;
+      min-height: 44px;
     }
-    .user-chip:hover { border-color: var(--red); color: var(--red); }
+    .user-chip:active { border-color: var(--red); color: var(--red); }
 
     /* ── Messages ── */
     .messages {
@@ -107,7 +109,7 @@
       width: 260px; height: 364px;  /* 5:7 portrait */
     }
     .pc-inner {
-      position: relative; width: 100%; height: 100%;
+      position: absolute; inset: 0;
       transform-style: preserve-3d;
       transition: transform 0.55s cubic-bezier(.4,0,.2,1);
       cursor: pointer; border-radius: 12px;
@@ -131,8 +133,8 @@
       justify-content: center; opacity: 0; transition: opacity .2s;
       font-size: 13px; font-weight: 600; color: white;
     }
-    .pc-inner:hover .pc-flip-hint { opacity: 1; }
-    .pc-inner.flipped:hover .pc-flip-hint { opacity: 0; }
+    .pc-inner:active .pc-flip-hint, .pc-inner.touch-active .pc-flip-hint { opacity: 1; }
+    .pc-inner.flipped .pc-flip-hint { opacity: 0; }
     .pc-front-meta {
       position: absolute; bottom: 0; left: 0; right: 0;
       background: linear-gradient(transparent, rgba(0,0,0,.55));
@@ -174,7 +176,9 @@
     .input-area {
       flex-shrink: 0; background: var(--surface);
       border-top: 1px solid var(--border);
-      padding: 12px 16px; display: flex; gap: 10px; align-items: flex-end;
+      padding: 12px 16px; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      display: flex; gap: 10px; align-items: flex-end;
+      position: sticky; bottom: 0; z-index: 100;
     }
     .input-box { flex: 1; position: relative; }
     textarea {
@@ -187,23 +191,25 @@
     textarea:focus { border-color: var(--accent); }
     textarea::placeholder { color: var(--text3); }
     .send-btn {
-      width: 42px; height: 42px; border-radius: 10px; border: none;
+      width: 44px; min-width: 44px; height: 44px; min-height: 44px;
+      border-radius: 10px; border: none;
       background: var(--accent); color: white; font-size: 16px;
-      cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+      cursor: pointer; transition: background 0.2s, transform 0.1s; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
     }
-    .send-btn:hover { background: #6a5ed4; }
+    .send-btn:active { transform: scale(0.95); background: #6a5ed4; }
     .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ── Empty state ── */
     .empty-state {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      text-align: center; padding: 40px;
+      text-align: center; padding: 40px 24px;
     }
-    .empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.5; }
-    .empty-title { font-size: 16px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
-    .empty-sub { font-size: 13px; color: var(--text3); }
+    .empty-emoji { font-size: 64px; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .empty-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+    .empty-desc { font-size: 14px; color: var(--text2); line-height: 1.6; max-width: 280px; }
 
     /* ── SSE indicator ── */
     .conn-dot {
@@ -230,6 +236,20 @@
 
     /* ── Scrollbar ── */
     .messages { scroll-behavior: smooth; }
+
+    /* ── Desktop extensions (min-width breakpoint) ── */
+    @media (min-width: 768px) {
+      .postcard-wrap { padding-left: 52px; }
+      .pc-slot { width: 260px; height: 364px; padding-bottom: 0; }
+      .empty-emoji { font-size: 72px; }
+      .empty-desc { max-width: 400px; }
+      .btn-explore:hover { border-color: var(--accent); color: var(--accent); }
+      .btn-explore:active { border-color: var(--accent); color: var(--accent); transform: scale(0.98); }
+      .user-chip:hover { border-color: var(--red); color: var(--red); }
+      .user-chip:active { border-color: var(--red); color: var(--red); }
+      .pc-inner:hover .pc-flip-hint { opacity: 1; }
+      .pc-inner.flipped:hover .pc-flip-hint { opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -259,9 +279,9 @@
 <!-- Message feed -->
 <div class="messages" id="msgFeed">
   <div class="empty-state" id="emptyState" style="display:none">
-    <div class="empty-icon">🦐</div>
-    <div class="empty-title">虾游还没有发来消息</div>
-    <div class="empty-sub">探索结果会以明信片的形式出现在这里<br>你也可以直接给它发消息</div>
+    <div class="empty-emoji">🦐</div>
+    <div class="empty-title">虾游正在出发...</div>
+    <div class="empty-desc">你的专属知识探索龙虾正在熟悉你的兴趣方向。<br>第一张明信片很快就到，先聊聊？</div>
   </div>
 </div>
 
@@ -474,7 +494,12 @@ function renderPostcard(msg) {
 
 function flipPc(id) {
   const el = document.getElementById('pci-' + id);
-  if (el) el.classList.toggle('flipped');
+  if (el) {
+    el.classList.toggle('flipped');
+    // Add touch-active class for visual feedback
+    el.classList.add('touch-active');
+    setTimeout(() => el.classList.remove('touch-active'), 300);
+  }
 }
 
 function renderSystem(msg) {
