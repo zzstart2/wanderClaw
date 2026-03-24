@@ -441,16 +441,21 @@ def provision_user(payload):
     }
     store_message(agent_id, welcome_msg)
 
-    # 欢迎消息
-    welcome_msg = {
-        'type': 'message',
-        'from': 'agent',
-        'content': f'{user_name}，你好呀 👋\n\n我是虾游，一只在互联网上到处游的龙虾。\n\n已经知道你对什么感兴趣了，我这就出发去看看。第一张明信片很快就到——不过别急，好东西值得等。\n\n想聊什么随时说，我在的。'
-    }
-    store_message(agent_id, welcome_msg)
-
     mark_invite_used(invite_code, agent_id)
     return {'success': True, 'agent_id': agent_id, 'message': '配置成功', 'cron_jobs': cron_registered}
+
+def check_admin(handler):
+    """检查请求是否携带有效的管理员 token"""
+    token = handler.headers.get('X-Admin-Token', '')
+    if not token:
+        # 也检查 Authorization header
+        auth = handler.headers.get('Authorization', '')
+        if auth.startswith('Admin '):
+            token = auth[6:]
+    if token != ADMIN_TOKEN:
+        handler.send_json({'error': 'Admin authentication required'}, 403)
+        return False
+    return True
 
 # ════════════════════════════════════════
 # ── HTTP Handler ──
@@ -558,11 +563,13 @@ class Handler(BaseHTTPRequestHandler):
 
         # Admin
         elif path == '/api/users':
+            if not check_admin(self): return
             users = load_json(USERS_FILE, {})
             safe = [{k: v for k, v in u.items() if k not in ('password_hash', 'password_salt')}
                     for u in users.values()]
             self.send_json(safe)
         elif path == '/api/invites':
+            if not check_admin(self): return
             self.send_json(load_json(INVITES_FILE, {}))
         # Archive
         elif path == '/api/archive':
@@ -820,10 +827,12 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({'ok': True, 'postcard_id': num, 'message_id': stored.get('id'), 'message': stored})
 
         elif path == '/api/admin/generate-invites':
+            if not check_admin(self): return
             count = min(int(body.get('count', 5)), 20)
             self.send_json({'codes': generate_invites(count)})
 
         elif path == '/api/admin/set-password':
+            if not check_admin(self): return
             """管理员为现有用户设置密码"""
             agent_id = body.get('agent_id', '').strip()
             password = body.get('password', '').strip()
@@ -838,6 +847,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({'ok': True})
 
         elif path == '/api/admin/inject-message':
+            if not check_admin(self): return
             """管理员向用户注入测试消息（用于调试）"""
             uid = body.get('agent_id', '').strip()
             if not uid or uid not in load_json(USERS_FILE, {}):
