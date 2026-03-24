@@ -7,10 +7,10 @@
 ```bash
 # 方法一：直接把整个目录作为 workspace（推荐）
 # 在 ~/.openclaw/openclaw.json 里配置：
-# "agent": { "workspace": "/Users/zhangzhe1/project/wanderClaw" }
+# "agent": { "workspace": "/path/to/wanderClaw" }
 
 # 方法二：软链接
-ln -s /Users/zhangzhe1/project/wanderClaw ~/.openclaw/workspace
+ln -s /path/to/wanderClaw ~/.openclaw/workspace
 ```
 
 ## 2. openclaw.json 配置
@@ -22,7 +22,7 @@ ln -s /Users/zhangzhe1/project/wanderClaw ~/.openclaw/workspace
     "emoji": "🦐"
   },
   "agent": {
-    "workspace": "/Users/zhangzhe1/project/wanderClaw",
+    "workspace": "/path/to/wanderClaw",
     "model": "anthropic/claude-sonnet-4-6"
   },
   "agents": {
@@ -68,7 +68,7 @@ openclaw cron add \
   --session isolated \
   --model "anthropic/claude-haiku-4-5-20251001" \
   --stagger 30m \
-  --prompt "$(cat /Users/zhangzhe1/project/wanderClaw/shrimp-wanderer/EXPLORER.md)"
+  --prompt "$(cat /path/to/wanderClaw/shrimp-wanderer/EXPLORER.md)"
 
 # 深度探索 — 每天 15:00
 openclaw cron add \
@@ -77,7 +77,7 @@ openclaw cron add \
   --session isolated \
   --model "anthropic/claude-haiku-4-5-20251001" \
   --stagger 30m \
-  --prompt "$(cat /Users/zhangzhe1/project/wanderClaw/shrimp-wanderer/EXPLORER.md)"
+  --prompt "$(cat /path/to/wanderClaw/shrimp-wanderer/EXPLORER.md)"
 
 # 轻度扫描 — 每天 12:00 和 20:00
 openclaw cron add \
@@ -113,7 +113,7 @@ openclaw cron list
 ## 5. 手动触发一次探索（测试用）
 
 ```bash
-openclaw run --prompt "$(cat /Users/zhangzhe1/project/wanderClaw/shrimp-wanderer/EXPLORER.md)"
+openclaw run --prompt "$(cat /path/to/wanderClaw/shrimp-wanderer/EXPLORER.md)"
 ```
 
 ## 6. 飞书 Bot 权限配置
