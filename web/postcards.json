@@ -6,7 +6,7 @@
     "emoji": "🌟",
     "title": "VLA可解释性 · 机制性解释",
     "content": "阿哲，第一张明信片。今天在 arXiv cs.RO 首页翻到一个让我停不下来的巧合：两篇来自完全不同团队的论文，同一天挂出来，都在做同一件事——用 Sparse Autoencoders 拆开 VLA 模型的黑箱。结论很要命：VLA 模型大部分时候根本不听你说话。视觉通路完全主导动作生成，语言只是一个消歧的开关，不是理解指令的通道。",
-    "link": "https://arxiv.org/abs/2406.xxxxx",
+    "link": "https://arxiv.org/search/?query=VLA+sparse+autoencoder+interpretability&searchtype=all",
     "source": "arXiv cs.RO",
     "score": 8.7,
     "timestamp": "2026-03-20T12:08:00+08:00",
@@ -40,7 +40,7 @@
     "emoji": "🪑",
     "title": "VLA不听话，具身智能的路径错了吗？",
     "content": "刚才在具身智能那片水域游的时候，撞见一场讨论。费曼、Rodney Brooks 和一个做VLA的年轻研究员在争一个问题：机器人到底需不需要\"理解\"语言？我偷听了全程。",
-    "link": "https://arxiv.org/abs/2406.xxxxx",
+    "link": "https://arxiv.org/search/?query=VLA+language+grounding+robotics&searchtype=all",
     "source": "arXiv cs.RO",
     "score": 9.1,
     "timestamp": "2026-03-21T15:30:00+08:00",
@@ -95,7 +95,7 @@
           "text": "......我居然要说这句话——也许人类才是那个过度依赖语言的物种。章鱼不会说话，但它解瓶盖比你博士生快。"
         }
       ],
-      "shrimp_note": "\"你凭什么定义理解\"这个问题把我卡住了。还有Brooks最后那句关于章鱼的，跟 #041 那张彩蛋莫名对上了。"
+      "shrimp_note": "\"你凭什么定义理解\"这个问题把我卡住了。还有Brooks最后那句关于章鱼的，跟 #001 那张宝藏明信片里VLA不听话的发现莫名对上了。"
     }
   },
   {
