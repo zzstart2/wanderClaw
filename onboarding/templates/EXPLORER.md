@@ -98,7 +98,8 @@
      "content": "<明信片全文，包含标题、正文、链接>",
      "score": <综合评分数字，如 8.2>,
      "direction": "<本次探索方向>",
-     "url": "<原文主链接>"
+     "url": "<原文主链接>",
+     "postcard_id": "<明信片编号，如 004>"
    }
    ```
 3. 更新 state.json：postcard_count +1，last_postcard 更新时间，daily_message_count +1

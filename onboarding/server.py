@@ -328,6 +328,31 @@ def provision_user(payload):
             c = src.read_text('utf-8').replace('{{USER_NAME}}', user_name).replace('{{AGENT_NAME}}', agent_name)
             (workspace / tpl_name).write_text(c, 'utf-8')
 
+    # 补充模板：SOUL.md、USER.md（带变量替换）
+    interests_str = '、'.join(interests) if interests else '待探索'
+    for tpl_name in ['SOUL.md', 'USER.md']:
+        src = TEMPLATE_DIR / tpl_name
+        if src.exists():
+            c = (src.read_text('utf-8')
+                 .replace('{{USER_NAME}}', user_name)
+                 .replace('{{AGENT_NAME}}', agent_name)
+                 .replace('{{INTERESTS}}', interests_str))
+            (workspace / tpl_name).write_text(c, 'utf-8')
+
+    # 补充模板：sources.yaml（直接复制，无需替换）
+    src_sources = TEMPLATE_DIR / 'sources.yaml'
+    if src_sources.exists():
+        shutil.copy2(src_sources, workspace / 'sources.yaml')
+
+    # 创建归档目录
+    for d in ['postcards', 'exploration-log', 'knowledge-base/ai',
+              'knowledge-base/philosophy', 'knowledge-base/investment',
+              'knowledge-base/serendipity', 'roundtables']:
+        (workspace / d).mkdir(parents=True, exist_ok=True)
+
+    # 创建空的 postcards.json（用于 web 展示）
+    save_json(workspace / 'postcards.json', [])
+
     save_json(workspace / 'interest-graph.json', build_interest_graph(interests))
     save_json(workspace / 'state.json', build_state(user_name))
     save_json(workspace / 'outbox.json', [])
