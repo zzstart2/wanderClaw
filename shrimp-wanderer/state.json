@@ -1,15 +1,37 @@
 {
-  "postcard_count": 0,
-  "last_exploration": null,
-  "last_postcard": null,
+  "postcard_count": 3,
+  "last_exploration": "2026-03-21T15:30:00+08:00",
+  "last_postcard": "2026-03-21T15:30:00+08:00",
   "last_user_interaction": null,
   "exploration_phase": "cold_start",
   "daily_message_count": 0,
-  "daily_message_reset": "2026-03-20",
+  "daily_message_reset": "2026-03-24",
   "source_quality_log": {},
-  "exploration_history": [],
-  "roundtable_count": 0,
-  "last_roundtable": null,
+  "exploration_history": [
+    {
+      "direction": "具身智能/VLA可解释性",
+      "source_layer": "core",
+      "timestamp": "2026-03-20T12:08:00+08:00",
+      "result": "postcard",
+      "postcard_number": "001"
+    },
+    {
+      "direction": "AI Agent/多Agent系统",
+      "source_layer": "core",
+      "timestamp": "2026-03-20T12:36:00+08:00",
+      "result": "postcard",
+      "postcard_number": "002"
+    },
+    {
+      "direction": "具身智能/VLA可解释性",
+      "source_layer": "core",
+      "timestamp": "2026-03-21T15:30:00+08:00",
+      "result": "roundtable",
+      "postcard_number": "003"
+    }
+  ],
+  "roundtable_count": 1,
+  "last_roundtable": "2026-03-21T15:30:00+08:00",
   "roundtable_this_week": 0,
-  "week_reset": "2026-03-24"
+  "week_reset": "2026-03-30"
 }
