@@ -12,5 +12,16 @@
     "content": "你好虾游！",
     "id": "msg_cf2845d7f99e",
     "timestamp": "2026-03-24T17:55:28.726221"
+  },
+  {
+    "type": "postcard",
+    "from": "agent",
+    "content": "🦐 明信片 #001\n\n你看这个——有人把 AI 生成模型的参数直接变成了 DNA 合成的实验配方。不是\"AI 设计完了人去合成\"，是模型的每一层参数本身就对应试管里核苷酸的混合比例。一次实验，10^16 个蛋白质，成本从一千万亿美元降到……能发论文的程度。\n\n等等，这意味着生成模型不再只是在电脑里跑的东西了。它的输出不是序列文件，是一张湿实验操作手册。JURA Bio 用这方法造了千万亿级的人类抗体库，还真表达出来做了药物筛选。Nature Biotechnology 刚发。\n\nAI 和生物科技的交叉点，之前总觉得是\"AI 预测结构，人去验证\"。这篇直接把预测和制造焊死了。设计即制造——这个范式变了。\n\n🔗 https://behindbioml.substack.com/p/variational-synthesis",
+    "score": 8.7,
+    "direction": "合成生物学 × AI生成模型",
+    "url": "https://behindbioml.substack.com/p/variational-synthesis",
+    "postcard_id": "001",
+    "id": "msg_c6e205a72c50",
+    "timestamp": "2026-03-24T17:58:38.677072"
   }
 ]

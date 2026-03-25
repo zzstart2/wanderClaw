@@ -6,10 +6,10 @@
   <title>🦐 虾游 · 登录</title>
   <style>
     :root {
-      --bg: #0d0d12; --surface: #16161f; --surface2: #1c1c28;
-      --border: #2a2a3d; --accent: #7c6fe0; --accent2: #5eb8ff;
-      --accent3: #62d9a0; --red: #ff6b6b;
-      --text: #e2e2f0; --text2: #8888aa; --text3: #44445a;
+      --bg: #121210; --surface: #1a1918; --surface2: #222120;
+      --border: #3a3632; --accent: #e8734a; --accent2: #f0a868;
+      --accent3: #6bbf8a; --red: #ff6b6b;
+      --text: #f0ece8; --text2: #9a918a; --text3: #5a5550;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -53,7 +53,7 @@
       font-weight: 600; cursor: pointer; transition: background 0.2s;
       font-family: inherit;
     }
-    .btn:hover { background: #6a5ed4; }
+    .btn:hover { background: #d4623a; }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .error-box {
       display: none; background: rgba(255,107,107,0.1);
@@ -66,6 +66,26 @@
       font-size: 12px; color: var(--text3);
     }
     .footer-link a { color: var(--accent2); text-decoration: none; }
+
+/* ══ Light Theme (follows system) ══ */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #faf8f5;
+    --surface: #f2eeea;
+    --surface2: #eae5e0;
+    --surface3: #e2ddd8;
+    --border: #d5cec7;
+    --accent: #d4603a;
+    --accent2: #c8863a;
+    --accent3: #3a9960;
+    --warn: #d48a10;
+    --red: #d04545;
+    --text: #2a2520;
+    --text2: #7a7068;
+    --text3: #a8a098;
+  }
+}
+
   </style>
 </head>
 <body>

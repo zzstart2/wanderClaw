@@ -60,6 +60,29 @@ def slugify(name):
 def make_agent_id(user_name):
     return f"xiayou_{slugify(user_name)}_{datetime.now().strftime('%m%d')}"
 
+
+# ── 心情计算 ──
+def calc_mood(workspace_path):
+    """根据最近明信片评分计算虾游心情"""
+    pc_f = Path(workspace_path) / "postcards.json"
+    if not pc_f.exists():
+        return {"emoji": "😴", "label": "还没出发", "level": "idle"}
+    postcards = load_json(pc_f, [])
+    if not postcards:
+        return {"emoji": "😴", "label": "还没出发", "level": "idle"}
+    recent = [p for p in postcards if p.get("score") is not None][-3:]
+    if not recent:
+        return {"emoji": "🦐", "label": "探索中", "level": "normal"}
+    avg = sum(p.get("score", 5) for p in recent) / len(recent)
+    if avg >= 8.5:
+        return {"emoji": "🤩", "label": "大丰收", "level": "excited"}
+    elif avg >= 7:
+        return {"emoji": "😊", "label": "收获不错", "level": "happy"}
+    elif avg >= 5:
+        return {"emoji": "🦐", "label": "正常巡游", "level": "normal"}
+    else:
+        return {"emoji": "😔", "label": "今天一般", "level": "low"}
+
 # ════════════════════════════════════════
 # ── 认证 ──
 # ════════════════════════════════════════
@@ -126,7 +149,7 @@ def get_messages(user_id, limit=100):
     f = MESSAGES_DIR / f'{user_id}.json'
     return load_json(f, [])[-limit:]
 
-def send_to_agent(user_id, content, user_info):
+def send_to_agent(user_id, content, user_info, model=None, timeout_sec=300):
     """调用 openclaw agent 触发对话，异步捕获回复写入 outbox"""
     if not _OPENCLAW_AVAILABLE:
         print(f"[send_to_agent] openclaw 不可用（本地模式），跳过 agent 调用")
@@ -136,9 +159,12 @@ def send_to_agent(user_id, content, user_info):
 
     def _run():
         try:
+            session_id = f'web-{secrets.token_hex(6)}'
+            cmd = ['openclaw', 'agent', '--agent', agent_id, '-m', content, '--json', '--session-id', session_id]
+            print(f"[send_to_agent] cmd: {cmd[:6]}... session={session_id}")
             r = subprocess.run(
-                ['openclaw', 'agent', '--agent', agent_id, '-m', content, '--json'],
-                capture_output=True, text=True, timeout=120
+                cmd,
+                capture_output=True, text=True, timeout=timeout_sec
             )
             if r.returncode != 0:
                 print(f"[send_to_agent] openclaw 返回非零: {r.returncode}\nstderr: {r.stderr[:200]}")
@@ -149,23 +175,10 @@ def send_to_agent(user_id, content, user_info):
             if json_start == -1:
                 print(f"[send_to_agent] stdout 中无 JSON: {raw[:200]}")
                 return
-            resp = json.loads(raw[json_start:])
-            payloads = resp.get('result', {}).get('payloads', [])
-            for p in payloads:
-                text = p.get('text', '').strip()
-                if not text:
-                    continue
-                # 写入 outbox，outbox_poller 会自动推送给前端
-                outbox_f = workspace / 'outbox.json'
-                outbox = load_json(outbox_f, [])
-                outbox.append({
-                    'type': 'message',
-                    'from': 'agent',
-                    'content': text,
-                    'timestamp': datetime.now().isoformat()
-                })
-                save_json(outbox_f, outbox)
-                print(f"[send_to_agent] 回复已写入 outbox: {text[:60]}")
+            # Do NOT write agent output to outbox/messages.
+            # All user-facing content (postcards) is delivered by PostcardsPoller.
+            # Agent intermediate steps and text replies are internal only.
+            print(f"[send_to_agent] agent 完成，postcards_poller 会处理明信片推送")
         except Exception as e:
             print(f"[send_to_agent] 异常: {e}")
 
@@ -230,6 +243,70 @@ def outbox_poller():
             pass
         time.sleep(3)
 
+
+
+def postcards_poller():
+    """Every 5 seconds check all user workspaces for postcards with pending_push status.
+    Convert them to messages, push via SSE, and mark as pushed."""
+    while True:
+        try:
+            users = load_json(USERS_FILE, {})
+            for user_id, u in users.items():
+                workspace = Path(u.get('workspace', ''))
+                pc_f = workspace / 'postcards.json'
+                if not pc_f.exists():
+                    continue
+                try:
+                    postcards = load_json(pc_f, [])
+                    changed = False
+                    for pc in postcards:
+                        if pc.get('status') != 'pending_push':
+                            continue
+                        # Dedup: check if this postcard_id already exists in messages
+                        pc_id = str(pc.get('id', ''))
+                        existing_msgs = get_messages(user_id, 500)
+                        already_pushed = any(
+                            m.get('postcard_id') == pc_id and m.get('type') == 'postcard'
+                            for m in existing_msgs
+                        )
+                        if already_pushed:
+                            pc['status'] = 'pushed'
+                            changed = True
+                            continue
+                        # Build a postcard message
+                        # Read postcard content: prefer full_text > content > .md file > title fallback
+                        pc_content = pc.get('full_text', '') or pc.get('content', '')
+                        if not pc_content and pc.get('file'):
+                            md_path = workspace / pc['file']
+                            if md_path.exists():
+                                try:
+                                    pc_content = md_path.read_text(encoding='utf-8').strip()
+                                except Exception:
+                                    pass
+                        if not pc_content:
+                            pc_content = f"\U0001f990 明信片 #{pc.get('id', '?')}\n\n{pc.get('title', '')}\n\n{pc.get('body', '')}"
+                        msg_data = {
+                            'type': 'postcard',
+                            'from': 'agent',
+                            'content': pc_content,
+                            'score': pc.get('score'),
+                            'direction': pc.get('direction', ''),
+                            'postcard_id': str(pc.get('id', '')),
+                            'url': pc.get('url', ''),
+                        }
+                        stored = store_message(user_id, msg_data)
+                        push_sse(user_id, {'type': 'postcard', 'data': stored})
+                        pc['status'] = 'pushed'
+                        changed = True
+                        print(f"[postcards_poller] pushed postcard #{pc.get('id')} to {user_id}")
+                    if changed:
+                        save_json(pc_f, postcards)
+                except Exception as e:
+                    print(f"[postcards_poller] error for {user_id}: {e}")
+        except Exception as e:
+            print(f"[postcards_poller] outer error: {e}")
+        time.sleep(5)
+
 # ════════════════════════════════════════
 # ── 邀请码 ──
 # ════════════════════════════════════════
@@ -245,6 +322,8 @@ def mark_invite_used(code, agent_id):
     invites = load_json(INVITES_FILE, {})
     code = code.strip().upper()
     if code in invites:
+        if invites[code].get('reusable'):
+            return  # 可重复使用的测试码，不标记为已使用
         invites[code].update({'used': True, 'used_by': agent_id, 'used_at': datetime.now().isoformat()})
         save_json(INVITES_FILE, invites)
 
@@ -369,7 +448,7 @@ def provision_user(payload):
     agents_list = [a for a in config.setdefault('agents',{}).setdefault('list',[]) if a.get('id') != agent_id]
     entry = {
         'id': agent_id, 'workspace': str(workspace),
-        'model': {'primary': 'sensetime/gpt-4o'},
+        'model': {'primary': 'cloudsway-opus/MaaS_Cl_Opus_4.6_20260205'},
         'heartbeat': {'every': '30m', 'activeHours': {'start': '08:00', 'end': '23:00'}},
         'identity': {'name': agent_name, 'emoji': agent_emoji}
     }
@@ -440,6 +519,17 @@ def provision_user(payload):
         'content': f'{user_name}，你好呀 👋\n\n我是虾游，一只在互联网上到处游的龙虾。\n\n已经知道你对什么感兴趣了，我这就出发去看看。第一张明信片很快就到——不过别急，好东西值得等。\n\n想聊什么随时说，我在的。'
     }
     store_message(agent_id, welcome_msg)
+
+    # 欢迎明信片
+    welcome_postcard = {
+        'type': 'postcard',
+        'from': 'agent',
+        'content': f'\U0001f990 明信片 #000\n\n{user_name}，这是你的第一张明信片——虽然不是从海里捞来的。\n\n我已经知道你对什么感兴趣了，正在规划第一次探索路线。接下来我会在 arXiv、Hacker News、Nature 这些地方到处游，找到好东西就给你寄明信片。\n\n每天 2-3 张，不多不少。有时候会跑题，但跑题的发现往往更有意思。\n\n准备好了吗？我出发了 \U0001f680',
+        'score': 10,
+        'direction': '欢迎',
+        'postcard_id': '000',
+    }
+    store_message(agent_id, welcome_postcard)
 
     mark_invite_used(invite_code, agent_id)
     return {'success': True, 'agent_id': agent_id, 'message': '配置成功', 'cron_jobs': cron_registered}
@@ -538,12 +628,14 @@ class Handler(BaseHTTPRequestHandler):
             uid, u = self.auth_user()
             if not uid: return
             state = load_json(Path(u.get('workspace','/nonexistent')) / 'state.json', {})
+            mood = calc_mood(u.get('workspace', ''))
             self.send_json({
                 'agent_id': uid, 'user_name': u.get('user_name'),
                 'agent_name': u.get('agent_name'), 'agent_emoji': u.get('agent_emoji'),
                 'exploration_phase': state.get('exploration_phase', u.get('exploration_phase', 'cold_start')),
                 'last_exploration': state.get('last_exploration'),
-                'postcard_count': state.get('postcard_count', 0)
+                'postcard_count': state.get('postcard_count', 0),
+                'mood': mood
             })
 
         # Messages
@@ -596,6 +688,24 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({'postcards': postcards, 'exploration_logs': logs,
                             'state': state, 'interests': interests})
 
+
+        # User profile
+        elif path == '/api/user/profile':
+            uid, u = self.auth_user()
+            if not uid: return
+            workspace = Path(u.get('workspace', ''))
+            state = load_json(workspace / 'state.json', {})
+            mood = calc_mood(u.get('workspace', ''))
+            self.send_json({
+                'agent_id': uid,
+                'user_name': u.get('user_name'),
+                'agent_name': u.get('agent_name', '虾游'),
+                'agent_emoji': u.get('agent_emoji', '🦐'),
+                'exploration_phase': state.get('exploration_phase', 'cold_start'),
+                'mood': mood,
+                'postcard_count': state.get('postcard_count', 0),
+            })
+
         elif path == '/api/pairing/list':
             if not _OPENCLAW_AVAILABLE:
                 self.send_json({'ok': False, 'message': 'openclaw 不可用（本地模式）'}); return
@@ -632,10 +742,12 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json({'message': '密码错误'}); return
             token = create_session(uid, remember=rem)
             state = load_json(Path(u.get('workspace','/x')) / 'state.json', {})
+            mood = calc_mood(u.get('workspace', ''))
             self.send_json({'token': token, 'user': {
                 'agent_id': uid, 'user_name': u.get('user_name'),
                 'agent_name': u.get('agent_name'), 'agent_emoji': u.get('agent_emoji'),
-                'exploration_phase': state.get('exploration_phase', 'cold_start')
+                'exploration_phase': state.get('exploration_phase', 'cold_start'),
+                'mood': mood
             }})
 
         elif path == '/api/auth/logout':
@@ -663,10 +775,10 @@ class Handler(BaseHTTPRequestHandler):
         elif path == '/api/explore':
             uid, u = self.auth_user()
             if not uid: return
-            # Write to inbox as exploration request
-            send_to_agent(uid, '[EXPLORE] 用户请求立刻探索一个感兴趣的方向', u)
-            # NOTE: client already shows a system message — no SSE push needed
-            self.send_json({'ok': True})
+            # Use the same explore message as cron jobs for consistent behavior
+            explore_msg = '读取你 workspace 下的 shrimp-wanderer/EXPLORER.md，按照其中的六步流程执行一次完整探索。'
+            send_to_agent(uid, explore_msg, u, timeout_sec=300)
+            self.send_json({'ok': True, 'message': '探索已启动'})
 
         # ── Webhook (agent → server) ──
         elif path.startswith('/api/webhook/message/'):
@@ -908,6 +1020,11 @@ def main():
     t = threading.Thread(target=outbox_poller, daemon=True, name='OutboxPoller')
     t.start()
     print(f"OutboxPoller 启动（每 3 秒轮询用户 outbox）")
+
+    # 启动 postcards 轮询线程
+    t2 = threading.Thread(target=postcards_poller, daemon=True, name='PostcardsPoller')
+    t2.start()
+    print(f"PostcardsPoller 启动（每 5 秒检查 pending_push 明信片）")
 
     server = ThreadedHTTPServer(('0.0.0.0', PORT), Handler)
     print(f"WanderClaw Server 启动 → http://0.0.0.0:{PORT}")

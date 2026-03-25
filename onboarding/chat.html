@@ -6,10 +6,10 @@
   <title>🦐 虾游</title>
   <style>
     :root {
-      --bg: #0d0d12; --surface: #16161f; --surface2: #1c1c28; --surface3: #222232;
-      --border: #2a2a3d; --accent: #7c6fe0; --accent2: #5eb8ff; --accent3: #62d9a0;
+      --bg: #121210; --surface: #1a1918; --surface2: #222120; --surface3: #2a2928;
+      --border: #3a3632; --accent: #e8734a; --accent2: #f0a868; --accent3: #6bbf8a;
       --warn: #f5a623; --red: #ff6b6b;
-      --text: #e2e2f0; --text2: #8888aa; --text3: #44445a;
+      --text: #f0ece8; --text2: #9a918a; --text3: #5a5550;
       --topbar-h: 58px; --input-h: 80px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,29 +24,44 @@
     .topbar {
       height: var(--topbar-h); flex-shrink: 0;
       background: var(--surface); border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; padding: 0 20px; gap: 12px;
+      display: flex; align-items: center; padding: 0 20px; gap: 14px; padding-top: env(safe-area-inset-top, 0px);
     }
     .agent-avatar { font-size: 26px; line-height: 1; }
     .agent-info { flex: 1; }
     .agent-name { font-size: 15px; font-weight: 700; }
     .agent-status { font-size: 11px; color: var(--text2); margin-top: 1px; }
-    .phase-badge {
-      display: inline-block; padding: 1px 7px; border-radius: 8px;
-      font-size: 10px; font-weight: 600;
+    .mood-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 10px;
+      font-size: 12px; font-weight: 600; white-space: nowrap;
+      transition: all 0.3s ease;
     }
-    .phase-cold_start { background: rgba(245,166,35,0.12); color: var(--warn); border: 1px solid rgba(245,166,35,0.2); }
-    .phase-trust_building { background: rgba(94,184,255,0.12); color: var(--accent2); border: 1px solid rgba(94,184,255,0.2); }
-    .phase-mature { background: rgba(98,217,160,0.12); color: var(--accent3); border: 1px solid rgba(98,217,160,0.2); }
+    .mood-excited {
+      background: rgba(240, 168, 104, 0.15); color: var(--accent2);
+      border: 1px solid rgba(240, 168, 104, 0.3);
+      animation: mood-glow 2s ease-in-out infinite;
+    }
+    .mood-happy {
+      background: rgba(232, 115, 74, 0.12); color: var(--accent);
+      border: 1px solid rgba(232, 115, 74, 0.2);
+    }
+    .mood-normal {
+      background: rgba(154, 145, 138, 0.12); color: var(--text2);
+      border: 1px solid rgba(154, 145, 138, 0.2);
+    }
+    .mood-low {
+      background: rgba(154, 145, 138, 0.08); color: var(--text3);
+      border: 1px solid rgba(154, 145, 138, 0.15);
+    }
+    .mood-idle {
+      background: rgba(154, 145, 138, 0.06); color: var(--text3);
+      border: 1px solid rgba(154, 145, 138, 0.1);
+    }
+    @keyframes mood-glow {
+      0%, 100% { box-shadow: 0 0 4px rgba(240, 168, 104, 0.2); }
+      50% { box-shadow: 0 0 8px rgba(240, 168, 104, 0.4); }
+    }
     .topbar-actions { display: flex; align-items: center; gap: 10px; }
-    .btn-explore {
-      display: flex; align-items: center; gap: 5px;
-      padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
-      background: var(--surface2); color: var(--text2); font-size: 12px;
-      font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;
-      min-height: 44px;
-    }
-    .btn-explore:active { border-color: var(--accent); color: var(--accent); transform: scale(0.98); }
-    .btn-explore:disabled { opacity: 0.4; cursor: not-allowed; }
+
     .user-chip {
       padding: 5px 12px; background: var(--surface2);
       border: 1px solid var(--border); border-radius: 20px;
@@ -67,7 +82,7 @@
 
     /* Message groups */
     .msg-wrap {
-      padding: 3px 20px; display: flex; flex-direction: column;
+      padding: 6px 20px; display: flex; flex-direction: column;
     }
     .msg-wrap.from-user { align-items: flex-end; }
     .msg-wrap.from-agent { align-items: flex-start; }
@@ -79,7 +94,7 @@
     .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
     .bubble {
       padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.6;
-      max-width: 100%; word-break: break-word;
+      max-width: 100%; word-break: break-word; -webkit-user-select: text; user-select: text;
     }
     .from-agent .bubble {
       background: var(--surface2); border: 1px solid var(--border);
@@ -113,6 +128,7 @@
       transform-style: preserve-3d;
       transition: transform 0.55s cubic-bezier(.4,0,.2,1);
       cursor: pointer; border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(232, 115, 74, 0.1);
     }
     .pc-inner.flipped { transform: rotateY(180deg); }
     .pc-front, .pc-back {
@@ -120,7 +136,7 @@
       border-radius: 12px; overflow: hidden;
       backface-visibility: hidden; -webkit-backface-visibility: hidden;
     }
-    .pc-front { background: var(--surface2); }
+    .pc-front { background: linear-gradient(135deg, var(--surface2) 0%, #1e1e30 50%, var(--surface2) 100%); }
     .pc-front-placeholder {
       width: 100%; height: 100%;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -151,7 +167,7 @@
     }
     .score-high { color: #ffd700; }
     .score-mid  { color: #a8e063; }
-    .score-low  { color: #8888aa; }
+    .score-low  { color: #9a918a; }
     .pc-back {
       transform: rotateY(180deg);
       background: var(--surface2); border: 1px solid var(--border);
@@ -177,7 +193,7 @@
       flex-shrink: 0; background: var(--surface);
       border-top: 1px solid var(--border);
       padding: 12px 16px; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-      display: flex; gap: 10px; align-items: flex-end;
+      display: flex; gap: 10px; align-items: center;
       position: sticky; bottom: 0; z-index: 100;
     }
     .input-box { flex: 1; position: relative; }
@@ -185,7 +201,7 @@
       width: 100%; background: var(--surface2); border: 1px solid var(--border);
       border-radius: 10px; padding: 10px 14px; color: var(--text);
       font-size: 14px; font-family: inherit; outline: none; resize: none;
-      line-height: 1.5; max-height: 120px; min-height: 42px;
+      line-height: 1.5; max-height: 120px; min-height: 44px;
       transition: border-color 0.2s;
     }
     textarea:focus { border-color: var(--accent); }
@@ -197,20 +213,67 @@
       cursor: pointer; transition: background 0.2s, transform 0.1s; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
     }
-    .send-btn:active { transform: scale(0.95); background: #6a5ed4; }
+    .send-btn:active { transform: scale(0.92); background: #c4522a; box-shadow: 0 0 12px rgba(232, 115, 74, 0.4); }
     .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ── Empty state ── */
     .empty-state {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      text-align: center; padding: 40px 24px;
+      text-align: center; padding: 40px 24px; position: relative;
     }
     .empty-emoji { font-size: 64px; margin-bottom: 20px; animation: float 3s ease-in-out infinite; }
     @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
     .empty-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 10px; }
     .empty-desc { font-size: 14px; color: var(--text2); line-height: 1.6; max-width: 280px; }
+    .empty-state::before {
+      content: ''; position: absolute; width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(232,115,74,0.08) 0%, transparent 70%);
+      border-radius: 50%; top: 20%; left: 50%; transform: translateX(-50%);
+      animation: pulse-glow 4s ease-in-out infinite;
+    }
+    @keyframes pulse-glow { 0%,100% { opacity: 0.5; transform: translateX(-50%) scale(1); } 50% { opacity: 1; transform: translateX(-50%) scale(1.2); } }
 
+
+    /* ── Explore CTA (empty state) ── */
+    .btn-explore-cta {
+      margin-top: 24px; padding: 14px 32px; border-radius: 14px;
+      border: 2px solid var(--accent); background: rgba(232,115,74,0.12);
+      color: var(--accent); font-size: 16px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: all 0.25s;
+      min-height: 52px; letter-spacing: 0.5px;
+      box-shadow: 0 4px 20px rgba(232,115,74,0.15);
+    }
+    .btn-explore-cta:hover { background: rgba(232,115,74,0.2); transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(232,115,74,0.25); }
+    .btn-explore-cta:active { transform: scale(0.97); }
+    .btn-explore-cta:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-explore-cta.exploring {
+      animation: explore-pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes explore-pulse {
+      0%,100% { box-shadow: 0 4px 20px rgba(232,115,74,0.15); }
+      50% { box-shadow: 0 4px 30px rgba(232,115,74,0.35); }
+    }
+
+    /* ── Explore mini button (next to send) ── */
+    .explore-mini-btn {
+      width: 44px; min-width: 44px; height: 44px; min-height: 44px;
+      border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text2); font-size: 18px;
+      cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .explore-mini-btn:hover { border-color: var(--accent); background: rgba(232,115,74,0.08); }
+    .explore-mini-btn:active { transform: scale(0.92); border-color: var(--accent); }
+    .explore-mini-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .explore-mini-btn.exploring {
+      animation: spin-explore 2s linear infinite;
+      border-color: var(--accent);
+    }
+    @keyframes spin-explore {
+      0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }
+    }
     /* ── SSE indicator ── */
     .conn-dot {
       width: 7px; height: 7px; border-radius: 50%;
@@ -243,16 +306,168 @@
       .pc-slot { width: 260px; height: 364px; padding-bottom: 0; }
       .empty-emoji { font-size: 72px; }
       .empty-desc { max-width: 400px; }
-      .btn-explore:hover { border-color: var(--accent); color: var(--accent); }
-      .btn-explore:active { border-color: var(--accent); color: var(--accent); transform: scale(0.98); }
       .user-chip:hover { border-color: var(--red); color: var(--red); }
       .user-chip:active { border-color: var(--red); color: var(--red); }
       .pc-inner:hover .pc-flip-hint { opacity: 1; }
       .pc-inner.flipped:hover .pc-flip-hint { opacity: 0; }
     }
+  
+/* ── Swipe back ── */
+.swipe-back-indicator {
+  position: fixed; left: 0; top: 0; bottom: 0; width: 40px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(18, 18, 16, 0.9);
+  border-right: 1px solid var(--border);
+  transform: translateX(-40px);
+  transition: transform 0.2s, background 0.2s;
+  z-index: 9999;
+  pointer-events: none;
+}
+.swipe-back-indicator.visible { transform: translateX(0); }
+.swipe-back-indicator.ready { background: rgba(232, 115, 74, 0.15); border-right-color: var(--accent); }
+.swipe-back-arrow {
+  color: var(--text3); font-size: 18px;
+  transition: color 0.2s;
+}
+.swipe-back-indicator.ready .swipe-back-arrow { color: var(--accent); }
+
+/* ── Postcard arrive animation ── */
+@keyframes postcard-arrive {
+  0%   { opacity: 0; transform: translateY(30px) scale(0.92) rotate(-2deg); }
+  50%  { opacity: 0.8; transform: translateY(-5px) scale(1.02) rotate(0.5deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+.postcard-wrap.arriving {
+  animation: postcard-arrive 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes msg-fadein {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.msg-wrap.arriving {
+  animation: msg-fadein 0.3s ease-out forwards;
+}
+
+/* ══ Light Theme (follows system) ══ */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #faf8f5;
+    --surface: #f2eeea;
+    --surface2: #eae5e0;
+    --surface3: #e2ddd8;
+    --border: #d5cec7;
+    --accent: #d4603a;
+    --accent2: #c8863a;
+    --accent3: #3a9960;
+    --warn: #d48a10;
+    --red: #d04545;
+    --text: #2a2520;
+    --text2: #7a7068;
+    --text3: #a8a098;
+  }
+}
+
+/* ══ Light Theme: hardcoded color overrides ══ */
+@media (prefers-color-scheme: light) {
+  /* Postcard front gradient */
+  .pc-front {
+    background: linear-gradient(135deg, var(--surface2) 0%, #d8d0e0 50%, var(--surface2) 100%) !important;
+  }
+  /* Postcard overlay */
+  .pc-front-overlay {
+    background: rgba(255,255,255,.35) !important;
+  }
+  /* Postcard bottom gradient */
+  .pc-front-bottom {
+    background: linear-gradient(transparent, rgba(0,0,0,.15)) !important;
+  }
+  .pc-front-num { color: rgba(0,0,0,.75) !important; }
+  .pc-front-dir { color: rgba(0,0,0,.55) !important; }
+  /* Postcard back overlay */
+  .pc-back-overlay {
+    background: rgba(255,255,255,.5) !important;
+    backdrop-filter: blur(4px);
+  }
+  /* Send button active */
+  .send-btn:active {
+    background: #b84a22 !important;
+    box-shadow: 0 0 12px rgba(212, 96, 58, 0.35) !important;
+  }
+  /* Empty state glow */
+  .empty-state::before {
+    background: radial-gradient(circle, rgba(212, 96, 58, 0.06) 0%, transparent 70%) !important;
+  }
+  /* Swipe back indicator */
+  .swipe-back-indicator {
+    background: rgba(250, 248, 245, 0.92) !important;
+  }
+  .swipe-back-indicator.ready {
+    background: rgba(212, 96, 58, 0.1) !important;
+  }
+  /* Scrollbar */
+  ::-webkit-scrollbar-thumb {
+    background: var(--border) !important;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text3) !important;
+  }
+}
+
+  
+/* ── Onboarding guide ── */
+.onboarding-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.onboarding-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 24px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  animation: postcard-arrive 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.onboarding-emoji { font-size: 48px; margin-bottom: 12px; }
+.onboarding-title {
+  font-size: 20px; font-weight: 700;
+  color: var(--text); margin: 0 0 8px;
+}
+.onboarding-desc {
+  font-size: 14px; color: var(--text2);
+  line-height: 1.6; margin: 0 0 20px;
+}
+.onboarding-features {
+  text-align: left; margin-bottom: 24px;
+}
+.onboarding-feature {
+  font-size: 14px; color: var(--text);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.5;
+}
+.onboarding-feature:last-child { border-bottom: none; }
+.onboarding-btn {
+  background: var(--accent); color: white;
+  border: none; border-radius: 12px;
+  padding: 12px 32px; font-size: 15px;
+  font-weight: 600; cursor: pointer;
+  transition: opacity 0.2s;
+  width: 100%;
+}
+.onboarding-btn:hover { opacity: 0.9; }
   </style>
 </head>
 <body>
+<div class="swipe-back-indicator" id="swipeBackIndicator">
+  <span class="swipe-back-arrow">‹</span>
+</div>
+
 
 <!-- Top bar -->
 <div class="topbar">
@@ -260,15 +475,13 @@
   <div class="agent-info">
     <div class="agent-name" id="agentName">虾游</div>
     <div class="agent-status">
-      <span class="phase-badge phase-cold_start" id="phaseBadge">cold_start</span>
+      <span class="mood-badge mood-normal" id="moodBadge">🦐 探索中</span>
       <span id="lastActiveText" style="margin-left:6px;font-size:11px;color:var(--text3)"></span>
     </div>
   </div>
   <div class="topbar-actions">
     <div class="conn-dot disconnected" id="connDot" title="实时连接状态"></div>
-    <button class="btn-explore" id="exploreBtn" onclick="triggerExplore()">
-      🔭 立刻探索
-    </button>
+
     <div class="user-chip" id="userChip" onclick="logout()" title="点击退出登录">
       <span id="userNameDisplay">—</span>
       <span style="font-size:10px">↩</span>
@@ -281,7 +494,10 @@
   <div class="empty-state" id="emptyState" style="display:none">
     <div class="empty-emoji">🦐</div>
     <div class="empty-title">虾游正在出发...</div>
-    <div class="empty-desc">你的专属知识探索龙虾正在熟悉你的兴趣方向。<br>第一张明信片很快就到，先聊聊？</div>
+    <div class="empty-desc">你的专属知识探索龙虾正在海里游荡，寻找值得寄回来的发现。<br><br>💡 试试跟虾游说说你最近对什么感兴趣</div>
+    <button class="btn-explore-cta" id="exploreCta" onclick="triggerExplore()">
+      🔭 让虾游出发探索
+    </button>
   </div>
 </div>
 
@@ -291,6 +507,7 @@
     <textarea id="msgInput" rows="1" placeholder="给虾游发消息，或告诉它去探索某个方向…"
       oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
   </div>
+  <button class="explore-mini-btn" id="exploreMiniBtn" onclick="triggerExplore()" title="让虾游探索">🔭</button>
   <button class="send-btn" id="sendBtn" onclick="sendMsg()" title="发送 (Enter)">➤</button>
 </div>
 
@@ -317,6 +534,8 @@ let allMessages = [];
   renderUserInfo();
   await loadMessages();
   connectSSE();
+  updateMood();
+  setInterval(updateMood, 60000);
 })();
 
 function authHeaders() {
@@ -330,10 +549,12 @@ function renderUserInfo() {
   document.getElementById('agentName').textContent = currentUser.agent_name || '虾游';
   document.getElementById('userNameDisplay').textContent = currentUser.user_name || '—';
 
-  const phase = currentUser.exploration_phase || 'cold_start';
-  const badge = document.getElementById('phaseBadge');
-  badge.textContent = phase;
-  badge.className = 'phase-badge phase-' + phase;
+  // Mood badge updated via updateMood() API call; set default here
+  const badge = document.getElementById('moodBadge');
+  if (badge) {
+    badge.textContent = '🦐 探索中';
+    badge.className = 'mood-badge mood-normal';
+  }
 }
 
 // ── Load history ──
@@ -385,13 +606,8 @@ function appendMsgEl(msg, animate = true) {
   feed.appendChild(el);
 
   if (animate) {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(8px)';
-    requestAnimationFrame(() => {
-      el.style.transition = 'opacity 0.25s, transform 0.25s';
-      el.style.opacity = '1';
-      el.style.transform = 'none';
-    });
+    el.classList.add('arriving');
+    el.addEventListener('animationend', () => el.classList.remove('arriving'), { once: true });
     scrollToBottom(true);
   }
 }
@@ -562,11 +778,13 @@ function handleKey(e) {
 
 // ── Explore ──
 async function triggerExplore() {
-  const btn = document.getElementById('exploreBtn');
-  btn.disabled = true;
-  btn.textContent = '🔭 探索中...';
+  const cta = document.getElementById('exploreCta');
+  const mini = document.getElementById('exploreMiniBtn');
 
-  const sysMsg = { id: 'sys_' + Date.now(), type: 'system', content: '已发送探索指令，虾游正在出发…', timestamp: new Date().toISOString() };
+  if (cta) { cta.disabled = true; cta.textContent = '🔭 虾游探索中...'; cta.classList.add('exploring'); }
+  if (mini) { mini.disabled = true; mini.classList.add('exploring'); }
+
+  const sysMsg = { id: 'sys_' + Date.now(), type: 'system', content: '🦐 已发送探索指令，虾游正在出发…', timestamp: new Date().toISOString() };
   appendMsgEl(sysMsg, true);
 
   try {
@@ -578,8 +796,8 @@ async function triggerExplore() {
   } catch {}
 
   setTimeout(() => {
-    btn.disabled = false;
-    btn.textContent = '🔭 立刻探索';
+    if (cta) { cta.disabled = false; cta.textContent = '🔭 让虾游出发探索'; cta.classList.remove('exploring'); }
+    if (mini) { mini.disabled = false; mini.classList.remove('exploring'); }
   }, 5000);
 }
 
@@ -633,14 +851,33 @@ function showTyping(show) {
 }
 
 function updateStatus(data) {
-  if (data.phase) {
-    const badge = document.getElementById('phaseBadge');
-    badge.textContent = data.phase;
-    badge.className = 'phase-badge phase-' + data.phase;
+  if (data.mood) {
+    const badge = document.getElementById('moodBadge');
+    if (badge) {
+      badge.textContent = data.mood.emoji + ' ' + data.mood.label;
+      badge.className = 'mood-badge mood-' + data.mood.level;
+    }
   }
   if (data.last_exploration) {
     document.getElementById('lastActiveText').textContent = '上次探索 ' + formatTime(data.last_exploration);
   }
+}
+
+// ── Mood badge ──
+async function updateMood() {
+  try {
+    const resp = await fetch('/api/user/profile', {
+      headers: { Authorization: 'Bearer ' + TOKEN }
+    });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const mood = data.mood || { emoji: '🦐', label: '探索中', level: 'normal' };
+    const badge = document.getElementById('moodBadge');
+    if (badge) {
+      badge.textContent = mood.emoji + ' ' + mood.label;
+      badge.className = 'mood-badge mood-' + mood.level;
+    }
+  } catch {}
 }
 
 // ── Logout ──
@@ -717,6 +954,98 @@ function injectDemoMessages() {
   renderAll();
   document.getElementById('connDot').title = '演示模式（无后端连接）';
 }
+
+// ── Swipe back gesture ──
+(function() {
+  let startX = 0, startY = 0, startTime = 0, tracking = false;
+  const indicator = document.getElementById('swipeBackIndicator');
+  const body = document.body;
+  const EDGE = 30, THRESHOLD = 80, FAST_THRESHOLD = 120, SPEED = 0.3, DAMPING = 0.4;
+
+  document.addEventListener('touchstart', function(e) {
+    const touch = e.touches[0];
+    if (touch.clientX > EDGE) return;
+    if (e.target.closest('.pc-inner, .pc-card, .pc-front, .pc-back')) return;
+    startX = touch.clientX;
+    startY = touch.clientY;
+    startTime = Date.now();
+    tracking = true;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!tracking) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - startX;
+    const dy = touch.clientY - startY;
+    if (Math.abs(dy) > Math.abs(dx) * 0.6) { tracking = false; indicator.classList.remove('visible','ready'); body.style.transform = ''; return; }
+    if (dx < 0) return;
+    const offset = dx * DAMPING;
+    body.style.transform = 'translateX(' + offset + 'px)';
+    body.style.transition = 'none';
+    indicator.classList.add('visible');
+    if (dx >= THRESHOLD) {
+      indicator.classList.add('ready');
+    } else {
+      indicator.classList.remove('ready');
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e) {
+    if (!tracking) return;
+    tracking = false;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - startX;
+    const elapsed = Date.now() - startTime;
+    const speed = dx / elapsed;
+    const triggered = dx >= FAST_THRESHOLD || (dx >= THRESHOLD && speed >= SPEED);
+    
+    if (triggered) {
+      body.style.transition = 'transform 0.25s ease-out';
+      body.style.transform = 'translateX(100%)';
+      setTimeout(function() { window.location.href = '/archive'; }, 200);
+    } else {
+      body.style.transition = 'transform 0.2s ease-out';
+      body.style.transform = '';
+    }
+    indicator.classList.remove('visible', 'ready');
+  }, { passive: true });
+})();
+
+
+// ── Onboarding guide ──
+function dismissOnboarding() {
+  const el = document.getElementById('onboardingGuide');
+  if (el) {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.3s';
+    setTimeout(() => el.style.display = 'none', 300);
+  }
+  localStorage.setItem('wanderclaw_onboarding_seen', '1');
+}
+
+// Show onboarding on first visit
+(function() {
+  if (!localStorage.getItem('wanderclaw_onboarding_seen')) {
+    const el = document.getElementById('onboardingGuide');
+    if (el) el.style.display = 'flex';
+  }
+})();
 </script>
+
+<!-- Onboarding guide -->
+<div class="onboarding-overlay" id="onboardingGuide" style="display:none">
+  <div class="onboarding-card">
+    <div class="onboarding-emoji">🦐</div>
+    <h2 class="onboarding-title">欢迎来到虾游</h2>
+    <p class="onboarding-desc">虾游是你的 AI 知识探索伙伴，每天在互联网上替你发现有趣的内容。</p>
+    <div class="onboarding-features">
+      <div class="onboarding-feature">💬 <strong>对话</strong> — 告诉虾游你的兴趣</div>
+      <div class="onboarding-feature">🔍 <strong>探索</strong> — 点「立刻探索」出发</div>
+      <div class="onboarding-feature">📬 <strong>明信片</strong> — 探索结果送达这里</div>
+      <div class="onboarding-feature">📚 <strong>档案馆</strong> — 左滑查看所有明信片</div>
+    </div>
+    <button class="onboarding-btn" onclick="dismissOnboarding()">开始体验</button>
+  </div>
+</div>
 </body>
 </html>

@@ -6,19 +6,19 @@
   <title>🦐 领养你的虾游</title>
   <style>
     :root {
-      --bg: #0d0d12;
-      --surface: #16161f;
-      --surface2: #1c1c28;
-      --surface3: #222232;
-      --border: #2a2a3d;
-      --accent: #7c6fe0;
-      --accent2: #5eb8ff;
-      --accent3: #62d9a0;
+      --bg: #121210;
+      --surface: #1a1918;
+      --surface2: #222120;
+      --surface3: #2a2928;
+      --border: #3a3632;
+      --accent: #e8734a;
+      --accent2: #f0a868;
+      --accent3: #6bbf8a;
       --warn: #f5a623;
       --red: #ff6b6b;
-      --text: #e2e2f0;
-      --text2: #8888aa;
-      --text3: #44445a;
+      --text: #f0ece8;
+      --text2: #9a918a;
+      --text3: #5a5550;
       --radius: 12px;
     }
 
@@ -225,8 +225,8 @@
       color: white;
     }
 
-    .btn-primary:hover { background: #6a5ed4; }
-    .btn-primary:active { transform: scale(0.98); background: #6a5ed4; }
+    .btn-primary:hover { background: #d4623a; }
+    .btn-primary:active { transform: scale(0.98); background: #d4623a; }
     .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .btn-ghost {
@@ -337,8 +337,8 @@
     }
 
     .tip-box {
-      background: rgba(124, 111, 224, 0.08);
-      border: 1px solid rgba(124, 111, 224, 0.2);
+      background: rgba(232, 115, 74, 0.08);
+      border: 1px solid rgba(232, 115, 74, 0.2);
       border-radius: 8px;
       padding: 12px 14px;
       font-size: 13px;
@@ -374,7 +374,7 @@
     }
 
     .interest-chip.selected {
-      background: rgba(124, 111, 224, 0.15);
+      background: rgba(232, 115, 74, 0.15);
       border-color: var(--accent);
       color: var(--accent);
     }
@@ -404,7 +404,7 @@
     }
 
     .emoji-opt:active { border-color: var(--accent); transform: scale(0.95); }
-    .emoji-opt.selected { border-color: var(--accent); background: rgba(124, 111, 224, 0.15); }
+    .emoji-opt.selected { border-color: var(--accent); background: rgba(232, 115, 74, 0.15); }
 
     /* Loading */
     .loading-wrap {
@@ -568,7 +568,7 @@
       font-size: 11px;
       font-weight: 600;
     }
-    .badge-purple { background: rgba(124,111,224,0.15); color: var(--accent); border: 1px solid rgba(124,111,224,0.25); }
+    .badge-purple { background: rgba(232,115,74,0.15); color: var(--accent); border: 1px solid rgba(232,115,74,0.25); }
 
     /* Progress bar for step 3 count */
     .interest-count {
@@ -586,6 +586,35 @@
       .card-body { padding: 28px 36px; }
       .card-footer { padding: 20px 36px; }
     }
+
+/* ══ Light Theme (follows system) ══ */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #faf8f5;
+    --surface: #f2eeea;
+    --surface2: #eae5e0;
+    --surface3: #e2ddd8;
+    --border: #d5cec7;
+    --accent: #d4603a;
+    --accent2: #c8863a;
+    --accent3: #3a9960;
+    --warn: #d48a10;
+    --red: #d04545;
+    --text: #2a2520;
+    --text2: #7a7068;
+    --text3: #a8a098;
+  }
+}
+
+/* ══ Light Theme: hardcoded color overrides ══ */
+@media (prefers-color-scheme: light) {
+  /* Slightly boost semi-transparent accent backgrounds for visibility on light bg */
+  .badge-purple {
+    background: rgba(212,96,58,0.1);
+    border-color: rgba(212,96,58,0.2);
+  }
+}
+
   </style>
 </head>
 <body>
@@ -607,16 +636,11 @@
     <div class="step-line" id="sl-1"></div>
     <div class="step-item" id="si-2">
       <div class="step-num">2</div>
-      <div class="step-label">飞书配置</div>
+      <div class="step-label">个性化</div>
     </div>
     <div class="step-line" id="sl-2"></div>
     <div class="step-item" id="si-3">
       <div class="step-num">3</div>
-      <div class="step-label">个性化</div>
-    </div>
-    <div class="step-line" id="sl-3"></div>
-    <div class="step-item" id="si-4">
-      <div class="step-num">4</div>
       <div class="step-label">完成</div>
     </div>
   </div>
@@ -672,8 +696,8 @@
       </div>
     </div>
 
-    <!-- ── Step 2: Feishu Setup ── -->
-    <div class="step-panel" id="step-2">
+    <!-- ── Step 2: Feishu Setup (HIDDEN) ── -->
+    <div class="step-panel" id="step-2" style="display:none !important">
       <div class="card-hero">
         <h2>配置你的飞书 Bot</h2>
         <p>虾游通过飞书私信联系你。你需要在飞书开放平台创建一个自建应用，整个过程约 5 分钟。</p>
@@ -790,8 +814,8 @@
     <!-- ── Step 3: Personalization ── -->
     <div class="step-panel" id="step-3">
       <div class="card-hero">
-        <h2>给你的虾游起个名字 🎨</h2>
-        <p>选择感兴趣的话题，虾游会优先在这些方向探索。可以之后随时通过对话调整。</p>
+        <h2>告诉虾游你是谁 🦐</h2>
+        <p>选好兴趣，虾游就出发</p>
       </div>
       <div class="card-body">
         <div class="field">
@@ -805,22 +829,9 @@
           <div class="field-hint">之后可通过 <strong style="color:var(--text2)">http://服务器地址/login</strong> 登录与虾游对话，无需飞书</div>
         </div>
 
-        <div class="field">
-          <label>虾游的名字</label>
-          <input type="text" id="agentName" placeholder="虾游" maxlength="10" value="虾游" />
-        </div>
 
-        <div class="field">
-          <label>选一个 Emoji 形象</label>
-          <div class="emoji-row">
-            <div class="emoji-opt selected" data-emoji="🦐" onclick="selectEmoji(this)">🦐</div>
-            <div class="emoji-opt" data-emoji="🤖" onclick="selectEmoji(this)">🤖</div>
-            <div class="emoji-opt" data-emoji="🔭" onclick="selectEmoji(this)">🔭</div>
-            <div class="emoji-opt" data-emoji="🦑" onclick="selectEmoji(this)">🦑</div>
-            <div class="emoji-opt" data-emoji="🌊" onclick="selectEmoji(this)">🌊</div>
-            <div class="emoji-opt" data-emoji="⚡" onclick="selectEmoji(this)">⚡</div>
-          </div>
-        </div>
+
+
 
         <div class="field">
           <label>感兴趣的领域 <span style="font-size:11px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">选 1–5 个</span></label>
@@ -841,14 +852,10 @@
           <div class="interest-count">已选 <span id="interestCount">0</span> / 5</div>
         </div>
 
-        <div class="field">
-          <label>其他感兴趣的话题（选填）</label>
-          <input type="text" id="customInterests" placeholder="量子计算、太空探索... 用逗号分隔" />
-          <div class="field-hint">如果上面没有合适的，在这里补充</div>
-        </div>
+
       </div>
       <div class="card-footer">
-        <button class="btn btn-ghost" onclick="goStep(2)">← 返回</button>
+        <button class="btn btn-ghost" onclick="goStep(1)">← 返回</button>
         <button class="btn btn-primary" onclick="submitSetup()">完成配置，启动虾游 🦐</button>
       </div>
     </div>
@@ -864,8 +871,8 @@
       </div>
     </div>
 
-    <!-- ── Step 3.8: Feishu Pairing ── -->
-    <div class="step-panel" id="step-pairing">
+    <!-- ── Step 3.8: Feishu Pairing (HIDDEN) ── -->
+    <div class="step-panel" id="step-pairing" style="display:none !important">
       <div class="card-body">
         <div class="success-wrap">
           <div class="success-icon">💬</div>
@@ -954,17 +961,20 @@
   let selectedEmoji = '🦐';
   let selectedInterests = [];
 
-  // ── Step navigation ──
+  // ── Step navigation (3 steps now) ──
   function goStep(n) {
     document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('step-' + n).classList.add('active');
+    // Map logical steps: 1=invite, 2=personalization(was step-3), 3=success(was step-4)
+    const panelMap = { 1: 'step-1', 2: 'step-3', 3: 'step-4' };
+    const panel = document.getElementById(panelMap[n]);
+    if (panel) panel.classList.add('active');
     currentStep = n;
     updateStepIndicator(n);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function updateStepIndicator(active) {
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 3; i++) {
       const si = document.getElementById('si-' + i);
       const sl = document.getElementById('sl-' + i);
       si.classList.remove('active', 'done');
@@ -998,7 +1008,7 @@
       const data = await res.json();
       if (data.valid) {
         inviteValidated = true;
-        goStep(2);
+        goStep(2); // -> personalization directly
       } else {
         showError('inviteError', data.message || '邀请码无效或已使用');
       }
@@ -1006,35 +1016,14 @@
       // Dev mode: allow any non-empty code
       if (code.length >= 4) {
         inviteValidated = true;
-        goStep(2);
+        goStep(2); // -> personalization directly
       } else {
         showError('inviteError', '无法连接服务器，请检查网络');
       }
     }
   }
 
-  // ── Step 2: Validate Feishu ──
-  function validateFeishu() {
-    const appId = document.getElementById('feishuAppId').value.trim();
-    const appSecret = document.getElementById('feishuAppSecret').value.trim();
-    const errEl = document.getElementById('feishuError');
-    errEl.style.display = 'none';
-
-    if (!appId) { showError('feishuError', '请填写 App ID，或点「跳过飞书」仅使用网页版'); return; }
-    if (!appId.startsWith('cli_')) { showError('feishuError', 'App ID 格式不对，应以 cli_ 开头'); return; }
-    if (!appSecret) { showError('feishuError', '请填写 App Secret'); return; }
-    if (appSecret.length < 8) { showError('feishuError', 'App Secret 长度不对，请重新复制'); return; }
-
-    goStep(3);
-  }
-
-  function skipFeishu() {
-    document.getElementById('feishuAppId').value = '';
-    document.getElementById('feishuAppSecret').value = '';
-    goStep(3);
-  }
-
-  // ── Step 3: Interests ──
+  // ── Interests ──
   function toggleInterest(el) {
     const topic = el.textContent.trim();
     if (el.classList.contains('selected')) {
@@ -1062,11 +1051,7 @@
   async function submitSetup() {
     const userName = document.getElementById('userName').value.trim();
     const userPassword = document.getElementById('userPassword').value;
-    const agentName = document.getElementById('agentName').value.trim() || '虾游';
-    const appId = document.getElementById('feishuAppId').value.trim();
-    const appSecret = document.getElementById('feishuAppSecret').value.trim();
-    const customRaw = document.getElementById('customInterests').value.trim();
-    const customTopics = customRaw ? customRaw.split(/[,，]/).map(t => t.trim()).filter(Boolean) : [];
+    const agentName = '虾游';
     const inviteCode = document.getElementById('inviteCode').value.trim();
 
     if (!userName) { alert('请填写你的名字'); return; }
@@ -1078,9 +1063,9 @@
       password: userPassword,
       agent_name: agentName,
       agent_emoji: selectedEmoji,
-      feishu_app_id: appId,
-      feishu_app_secret: appSecret,
-      interests: [...selectedInterests, ...customTopics]
+      feishu_app_id: '',
+      feishu_app_secret: '',
+      interests: [...selectedInterests]
     };
 
     // Show loading
@@ -1089,17 +1074,16 @@
 
     const statuses = [
       '创建 Agent 工作区...',
-      '写入飞书配置...',
       '注册定时探索任务...',
       '重载 OpenClaw...',
-      '验证飞书连接...'
+      '即将完成...'
     ];
     let si = 0;
     const ticker = setInterval(() => {
       if (si < statuses.length) {
         document.getElementById('loadingStatus').textContent = statuses[si++];
       }
-    }, 900);
+    }, 600);
 
     try {
       const res = await fetch('/api/provision', {
@@ -1111,12 +1095,10 @@
       const data = await res.json();
 
       if (data.success) {
-        // Clear any old session to avoid stale user data in chat
         localStorage.removeItem('wanderclaw_token');
         localStorage.removeItem('wanderclaw_user');
 
-        // Auto-login so user arrives at /chat already authenticated
-        let authToken = null;
+        // Auto-login
         try {
           const loginRes = await fetch('/api/auth/login', {
             method: 'POST',
@@ -1125,16 +1107,13 @@
           });
           const loginData = await loginRes.json();
           if (loginData.token) {
-            authToken = loginData.token;
             localStorage.setItem('wanderclaw_token', loginData.token);
             localStorage.setItem('wanderclaw_user', JSON.stringify(loginData.user));
-          } else {
-            console.error('Auto-login failed:', loginData.message);
           }
         } catch (e) {
           console.error('Auto-login error:', e);
         }
-        showSuccess(data, agentName, appId, authToken, data.agent_id);
+        showSuccess(data, agentName);
       } else {
         document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
         document.getElementById('step-3').classList.add('active');
@@ -1142,88 +1121,35 @@
       }
     } catch (e) {
       clearInterval(ticker);
-      // Dev mode fallback
       showSuccess({
         agent_id: 'xiayou_' + userName.toLowerCase().replace(/\s/g, '_'),
         message: '配置成功（预览模式）'
-      }, agentName, appId, null);
+      }, agentName);
     }
   }
 
-  let _pairingTimer = null;
-  let _pairingToken = null;
-  let _pairingAgentId = null;
-
-  function showSuccess(data, agentName, appId, authToken, agentId) {
-    // Pre-fill step 4 data
-    document.getElementById('successEmoji').textContent = selectedEmoji;
-    document.getElementById('successMsg').textContent =
-      agentName + ' 已经在服务器上启动了，随时准备出发探索 🚀';
-    document.getElementById('displayAgentId').textContent = data.agent_id || '—';
-    if (appId) {
-      document.getElementById('displayAppId').textContent = appId.slice(0, 8) + '••••';
-    } else {
-      document.getElementById('displayAppIdRow').style.display = 'none';
-      document.getElementById('feishuNextText').textContent = '使用网页版与虾游对话';
-    }
-    document.getElementById('displayTime').textContent = new Date().toLocaleString('zh-CN');
-
-    if (appId) {
-      // Show pairing step first — use authToken if available, else agentId as fallback
-      updateStepIndicator(4);
-      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById('step-pairing').classList.add('active');
-      _pairingToken = authToken;
-      _pairingAgentId = agentId || data.agent_id;
-      startPairingPoll();
-    } else {
-      // No feishu — go directly to success
-      updateStepIndicator(4);
-      document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-      document.getElementById('step-4').classList.add('active');
-    }
-  }
-
-  function startPairingPoll() {
-    let attempts = 0;
-    const maxWait = 120; // 2 min
-    _pairingTimer = setInterval(async () => {
-      attempts++;
-      if (attempts > maxWait / 3) {
-        clearInterval(_pairingTimer);
-        document.getElementById('pairingStatusText').textContent = '等待超时，请联系管理员在后台手动审批';
-        return;
-      }
-      try {
-        const headers = { 'Content-Type': 'application/json' };
-        if (_pairingToken) headers['Authorization'] = 'Bearer ' + _pairingToken;
-        const r = await fetch('/api/pairing/auto', {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ agent_id: _pairingAgentId })
-        });
-        const d = await r.json();
-        if (d.ok && d.approved) {
-          clearInterval(_pairingTimer);
-          document.getElementById('pairingStatusText').textContent = '✅ 配对成功！';
-          setTimeout(goToFinalSuccess, 1500);
-        } else if (d.pending) {
-          document.getElementById('pairingStatusText').textContent = '正在审批配对请求...';
-        }
-        // else: no pending yet, keep waiting
-      } catch (_) {}
-    }, 3000);
-  }
-
-  function skipPairing() {
-    clearInterval(_pairingTimer);
-    goToFinalSuccess();
-  }
-
-  function goToFinalSuccess() {
-    updateStepIndicator(4);
+  function showSuccess(data, agentName) {
+    // Quick success animation then redirect to /chat
     document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('step-4').classList.add('active');
+    updateStepIndicator(3);
+
+    document.getElementById('successEmoji').textContent = '🦐';
+    document.getElementById('successMsg').textContent = '虾游已就位，正在跳转...';
+    document.getElementById('displayAgentId').textContent = data.agent_id || '—';
+    document.getElementById('displayAppIdRow').style.display = 'none';
+    document.getElementById('displayTime').textContent = new Date().toLocaleString('zh-CN');
+
+    // Hide credential box and next-steps, show minimal success
+    const credBox = document.getElementById('credBox');
+    if (credBox) credBox.style.display = 'none';
+    const nextSteps = document.querySelector('#step-4 .next-steps');
+    if (nextSteps) nextSteps.style.display = 'none';
+
+    // Auto redirect after 1.5s
+    setTimeout(() => {
+      window.location.href = '/chat';
+    }, 1500);
   }
 
   // ── Utils ──
@@ -1237,7 +1163,6 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       if (currentStep === 1) validateInvite();
-      else if (currentStep === 2) validateFeishu();
     }
   });
 </script>

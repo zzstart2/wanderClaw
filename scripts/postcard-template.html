@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+  width: 400px; 
+  height: 560px; 
+  background: #0a0e14;
+  font-family: -apple-system, 'PingFang SC', 'Noto Sans SC', sans-serif;
+  overflow: hidden;
+}
+.card {
+  width: 400px;
+  height: 560px;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.card-header {
+  padding: 28px 28px 16px;
+  position: relative;
+  z-index: 2;
+}
+.card-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 180px;
+  z-index: 1;
+}
+.bg-normal { background: linear-gradient(135deg, #0d2137 0%, #0a3d5c 50%, #0d2137 100%); }
+.bg-surprise { background: linear-gradient(135deg, #1a0d2e 0%, #2d1b69 50%, #1a0d2e 100%); }
+.bg-treasure { background: linear-gradient(135deg, #2e2208 0%, #5c4a1a 50%, #2e2208 100%); }
+.bg-easter { background: linear-gradient(135deg, #2e0d0d 0%, #6b1a1a 50%, #2e0d0d 100%); }
+.bg-roundtable { background: linear-gradient(135deg, #1a0d2e 0%, #2d1b69 50%, #3d2e08 100%); }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.badge-normal { background: rgba(0,210,211,0.15); color: #00d2d3; }
+.badge-surprise { background: rgba(156,89,255,0.15); color: #9c59ff; }
+.badge-treasure { background: rgba(255,198,41,0.15); color: #ffc629; }
+.badge-easter { background: rgba(255,71,87,0.15); color: #ff4757; }
+.badge-roundtable { background: rgba(156,89,255,0.15); color: #9c59ff; }
+
+.score {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.8);
+  z-index: 2;
+}
+
+.card-body {
+  flex: 1;
+  padding: 0 28px 20px;
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+}
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #e8e8e8;
+  line-height: 1.4;
+  margin-top: 20px;
+  margin-bottom: 14px;
+}
+.content {
+  font-size: 14px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.75;
+  flex: 1;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 8;
+  -webkit-box-orient: vertical;
+}
+.card-footer {
+  padding: 16px 28px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.45);
+}
+.source {
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+}
+.shrimp-watermark {
+  position: absolute;
+  bottom: 70px;
+  right: 20px;
+  font-size: 48px;
+  opacity: 0.06;
+  z-index: 1;
+}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="card-bg {{BG_CLASS}}"></div>
+  <div class="card-header">
+    <span class="badge {{BADGE_CLASS}}">{{BADGE_TEXT}}</span>
+    <span class="score">{{SCORE}}</span>
+  </div>
+  <div class="card-body">
+    <div class="title">{{TITLE}}</div>
+    <div class="content">{{CONTENT}}</div>
+  </div>
+  <div class="card-footer">
+    <div class="tags">{{TAGS}}</div>
+    <div class="source">{{SOURCE}}</div>
+  </div>
+  <div class="shrimp-watermark">🦐</div>
+</div>
+</body>
+</html>

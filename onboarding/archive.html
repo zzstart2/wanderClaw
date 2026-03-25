@@ -6,10 +6,10 @@
   <title>🦐 虾游档案馆</title>
   <style>
     :root {
-      --bg: #0d0d12; --surface: #16161f; --surface2: #1c1c28; --surface3: #222232;
-      --border: #2a2a3d; --accent: #7c6fe0; --accent2: #5eb8ff; --accent3: #62d9a0;
+      --bg: #121210; --surface: #1a1918; --surface2: #222120; --surface3: #2a2928;
+      --border: #3a3632; --accent: #e8734a; --accent2: #f0a868; --accent3: #6bbf8a;
       --warn: #f5a623; --red: #ff6b6b;
-      --text: #e2e2f0; --text2: #8888aa; --text3: #44445a;
+      --text: #f0ece8; --text2: #9a918a; --text3: #5a5550;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; background: var(--bg); color: var(--text);
@@ -39,8 +39,8 @@
       padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600;
     }
     .phase-cold_start { background: rgba(245,166,35,.12); color: var(--warn); border: 1px solid rgba(245,166,35,.2); }
-    .phase-trust_building { background: rgba(94,184,255,.12); color: var(--accent2); border: 1px solid rgba(94,184,255,.2); }
-    .phase-mature { background: rgba(98,217,160,.12); color: var(--accent3); border: 1px solid rgba(98,217,160,.2); }
+    .phase-trust_building { background: rgba(240,168,104,.12); color: var(--accent2); border: 1px solid rgba(240,168,104,.2); }
+    .phase-mature { background: rgba(107,191,138,.12); color: var(--accent3); border: 1px solid rgba(107,191,138,.2); }
     .btn-refresh {
       padding: 5px 12px; border-radius: 7px; border: 1px solid var(--border);
       background: transparent; color: var(--text2); font-size: 12px; cursor: pointer;
@@ -70,7 +70,7 @@
       background: var(--surface3); color: var(--text2);
       border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: 700;
     }
-    .tab.active .tab-badge { background: rgba(124,111,224,.2); color: var(--accent); }
+    .tab.active .tab-badge { background: rgba(232,115,74,.2); color: var(--accent); }
 
     /* ── Content ── */
     .content { padding: 24px 20px; max-width: 1200px; margin: 0 auto; }
@@ -88,7 +88,7 @@
       font-family: inherit; transition: all 0.15s;
     }
     .filter-chip:hover { border-color: var(--accent); color: var(--text); }
-    .filter-chip.active { background: rgba(124,111,224,.15); border-color: var(--accent); color: var(--accent); }
+    .filter-chip.active { background: rgba(232,115,74,.15); border-color: var(--accent); color: var(--accent); }
 
     .postcard-grid {
       display: grid;
@@ -139,7 +139,7 @@
     }
     .score-high { color: #ffd700; }
     .score-mid  { color: #a8e063; }
-    .score-low  { color: #8888aa; }
+    .score-low  { color: #9a918a; }
 
     /* Flip hint overlay */
     .pc-flip-hint {
@@ -227,10 +227,10 @@
     }
     .state-card-body { padding: 14px; max-height: 360px; overflow-y: auto; }
     .json-view { font-family: monospace; font-size: 12px; line-height: 1.6; white-space: pre; color: var(--text2); }
-    .json-key   { color: #7c6fe0; }
-    .json-str   { color: #62d9a0; }
+    .json-key   { color: #e8734a; }
+    .json-str   { color: #6bbf8a; }
     .json-num   { color: #f5a623; }
-    .json-bool  { color: #5eb8ff; }
+    .json-bool  { color: #f0a868; }
     .json-null  { color: #ff6b6b; }
 
     /* ── Interest chips ── */
@@ -260,10 +260,10 @@
     .debug-select:focus, .debug-input:focus { outline: none; border-color: var(--accent); }
     .debug-btn {
       padding: 7px 16px; border-radius: 7px; border: 1px solid var(--accent);
-      background: rgba(124,111,224,.12); color: var(--accent); font-size: 12px;
+      background: rgba(232,115,74,.12); color: var(--accent); font-size: 12px;
       font-weight: 600; cursor: pointer; font-family: inherit; transition: all .15s;
     }
-    .debug-btn:hover { background: rgba(124,111,224,.25); }
+    .debug-btn:hover { background: rgba(232,115,74,.25); }
     .debug-btn.danger { border-color: var(--red); background: rgba(255,107,107,.08); color: var(--red); }
     .debug-btn.danger:hover { background: rgba(255,107,107,.18); }
     .debug-log {
@@ -284,6 +284,107 @@
       animation: spin .8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Mobile Responsive ── */
+    @media (max-width: 480px) {
+      /* Topbar: stack on mobile */
+      .topbar {
+        height: auto; flex-wrap: wrap; padding: 10px 14px; gap: 8px;
+      }
+      .topbar-title { font-size: 14px; order: 1; flex: 1; }
+      .topbar-back { order: 0; font-size: 12px; padding: 4px 8px; }
+      .topbar-stats { order: 2; width: 100%; gap: 8px; justify-content: flex-start; }
+      .btn-refresh { order: 3; }
+
+      /* Tabs: scrollable, bigger touch targets */
+      .tabs {
+        overflow-x: auto; -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; gap: 0; padding: 8px 10px 0;
+        top: auto; /* unstick on mobile to save space */
+        position: relative;
+      }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab {
+        padding: 10px 14px; font-size: 12px; white-space: nowrap;
+        min-height: 44px; /* Apple minimum touch target */
+        flex-shrink: 0;
+      }
+
+      /* Content area */
+      .content { padding: 16px 12px; }
+
+      /* Postcard grid: single column or smaller min */
+      .postcard-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+      }
+
+      /* Filter chips: scroll if too many */
+      .filter-bar { gap: 6px; }
+      .filter-chip { padding: 6px 10px; font-size: 11px; }
+
+      /* Flip card front info */
+      .pc-front-dir { max-width: 50%; font-size: 10px; }
+
+      /* Log panel */
+      .log-entry { padding: 14px; }
+
+      /* JSON view: wrap instead of overflow */
+      .json-view {
+        white-space: pre-wrap;
+        word-break: break-all;
+        font-size: 11px;
+      }
+
+      /* State grid already handled at 700px, just ensure padding */
+      .state-card-body { padding: 10px; max-height: 280px; }
+
+      /* Debug panel */
+      .debug-section { padding: 12px; }
+      .debug-row { gap: 8px; }
+      .debug-label { width: 60px; font-size: 11px; }
+      .debug-select, .debug-input { min-width: 100px; font-size: 11px; }
+      .debug-btn { padding: 8px 12px; font-size: 11px; min-height: 44px; }
+    }
+
+    @media (max-width: 375px) {
+      .postcard-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .topbar-stats { flex-wrap: wrap; }
+      .stat-chip { font-size: 11px; }
+      .filter-bar {
+        flex-wrap: nowrap; overflow-x: auto;
+        -webkit-overflow-scrolling: touch; scrollbar-width: none;
+      }
+      .filter-bar::-webkit-scrollbar { display: none; }
+      .filter-chip { white-space: nowrap; flex-shrink: 0; }
+    }
+
+    /* ── Filter result count ── */
+    .filter-result-count {
+      font-size: 12px; color: var(--text2); margin-bottom: 12px;
+      padding: 4px 0;
+    }
+    .filter-result-count span { font-weight: 700; color: var(--accent); }
+
+    /* ── Score/Time filter bars: no-wrap for mobile scroll ── */
+    #scoreFilterBar, #timeFilterBar {
+      flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    #scoreFilterBar::-webkit-scrollbar, #timeFilterBar::-webkit-scrollbar { display: none; }
+.load-more-hint {
+  text-align: center;
+  padding: 16px;
+  font-size: 13px;
+  color: var(--text3);
+}
+.load-more-hint.done {
+  color: var(--text3);
+  opacity: 0.6;
+}
   </style>
 </head>
 <body>
@@ -328,7 +429,24 @@
   <div class="panel active" id="panel-postcards">
     <div class="filter-bar">
       <span class="filter-label">筛选</span>
-      <button class="filter-chip active" data-dir="" onclick="filterPostcards('')">全部</button>
+      <button class="filter-chip active" data-dir="" onclick="setFilter('direction','')">全部</button>
+    </div>
+    <div class="filter-bar" id="scoreFilterBar">
+      <span class="filter-label">评分</span>
+      <button class="filter-chip active" data-score="" onclick="setFilter('scoreRange','')">全部</button>
+      <button class="filter-chip" data-score="high" onclick="setFilter('scoreRange','high')">⭐ 8+</button>
+      <button class="filter-chip" data-score="mid" onclick="setFilter('scoreRange','mid')">6-8</button>
+      <button class="filter-chip" data-score="low" onclick="setFilter('scoreRange','low')">&lt;6</button>
+    </div>
+    <div class="filter-bar" id="timeFilterBar">
+      <span class="filter-label">时间</span>
+      <button class="filter-chip active" data-time="" onclick="setFilter('timeRange','')">全部</button>
+      <button class="filter-chip" data-time="today" onclick="setFilter('timeRange','today')">📅 今天</button>
+      <button class="filter-chip" data-time="3d" onclick="setFilter('timeRange','3d')">近3天</button>
+      <button class="filter-chip" data-time="7d" onclick="setFilter('timeRange','7d')">近7天</button>
+    </div>
+    <div class="filter-result-count" id="filterCount" style="display:none">
+      找到 <span id="filterNum">0</span> 张明信片
     </div>
     <div class="postcard-grid" id="postcardGrid">
       <!-- populated by JS -->
@@ -411,7 +529,7 @@
 <script>
 const TOKEN = localStorage.getItem('wanderclaw_token');
 let archiveData = { postcards: [], exploration_logs: [], state: {}, interests: {} };
-let currentFilter = '';
+let filters = { direction: '', scoreRange: '', timeRange: '' };
 let sseSource = null;
 
 // ── Auth ──
@@ -471,34 +589,143 @@ function buildFilterChips() {
     btn.className = 'filter-chip';
     btn.dataset.dir = dir;
     btn.textContent = (EMOJIS[findKey(dir)] || '🏷') + ' ' + dir;
-    btn.onclick = () => filterPostcards(dir);
+    btn.onclick = () => setFilter('direction', dir);
     bar.appendChild(btn);
   });
 }
 
 function filterPostcards(dir) {
-  currentFilter = dir;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.dir === dir));
+  setFilter('direction', dir);
+}
+
+function setFilter(type, value) {
+  filters[type] = value;
+  if (type === 'direction') {
+    document.querySelectorAll('[data-dir]').forEach(c => c.classList.toggle('active', c.dataset.dir === value));
+  } else if (type === 'scoreRange') {
+    document.querySelectorAll('[data-score]').forEach(c => c.classList.toggle('active', c.dataset.score === value));
+  } else if (type === 'timeRange') {
+    document.querySelectorAll('[data-time]').forEach(c => c.classList.toggle('active', c.dataset.time === value));
+  }
   renderPostcards();
 }
 
-// ── Postcard rendering ──
+// ── Postcard rendering (infinite scroll pagination) ──
+const PAGE_SIZE = 20;
+let displayedCount = 0;
+let currentFiltered = [];
+
 function renderPostcards() {
   const grid = document.getElementById('postcardGrid');
   const { postcards = [] } = archiveData;
-  const filtered = currentFilter
-    ? postcards.filter(p => (getPostcardMeta(p).direction || '').includes(currentFilter))
-    : postcards;
 
+  let filtered = postcards;
+
+  // 方向过滤
+  if (filters.direction) {
+    filtered = filtered.filter(p => (getPostcardMeta(p).direction || '').includes(filters.direction));
+  }
+
+  // 评分过滤
+  if (filters.scoreRange) {
+    filtered = filtered.filter(p => {
+      const score = getPostcardMeta(p).score || 0;
+      if (filters.scoreRange === 'high') return score >= 8;
+      if (filters.scoreRange === 'mid') return score >= 6 && score < 8;
+      if (filters.scoreRange === 'low') return score < 6;
+      return true;
+    });
+  }
+
+  // 时间过滤
+  if (filters.timeRange) {
+    const now = Date.now();
+    const day = 86400000;
+    filtered = filtered.filter(p => {
+      const ts = new Date(getPostcardMeta(p).timestamp || p.timestamp || 0).getTime();
+      if (filters.timeRange === 'today') return now - ts < day;
+      if (filters.timeRange === '3d') return now - ts < 3 * day;
+      if (filters.timeRange === '7d') return now - ts < 7 * day;
+      return true;
+    });
+  }
+
+  // 倒序（最新在前）
+  currentFiltered = [...filtered].reverse();
+  displayedCount = 0;
   grid.innerHTML = '';
-  document.getElementById('emptyPostcards').style.display = filtered.length ? 'none' : 'block';
-  if (!filtered.length) return;
 
-  // Sort: newest first
-  [...filtered].reverse().forEach(p => {
-    const slot = buildPostcardSlot(p);
+  document.getElementById('emptyPostcards').style.display = currentFiltered.length ? 'none' : 'block';
+
+  // 筛选结果计数
+  const hasFilter = filters.direction || filters.scoreRange || filters.timeRange;
+  const countEl = document.getElementById('filterCount');
+  if (countEl) {
+    countEl.style.display = hasFilter ? 'block' : 'none';
+    const numEl = document.getElementById('filterNum');
+    if (numEl) numEl.textContent = currentFiltered.length;
+  }
+
+  if (!currentFiltered.length) return;
+
+  // 渲染第一批
+  loadMorePostcards();
+
+  // 设置 Intersection Observer
+  setupLoadMore();
+}
+
+function loadMorePostcards() {
+  const grid = document.getElementById('postcardGrid');
+  const end = Math.min(displayedCount + PAGE_SIZE, currentFiltered.length);
+
+  for (let i = displayedCount; i < end; i++) {
+    const slot = buildPostcardSlot(currentFiltered[i]);
     grid.appendChild(slot);
-  });
+  }
+  displayedCount = end;
+
+  // 更新加载提示
+  updateLoadMoreHint();
+}
+
+function updateLoadMoreHint() {
+  let hint = document.getElementById('loadMoreHint');
+  if (!hint) {
+    hint = document.createElement('div');
+    hint.id = 'loadMoreHint';
+    hint.className = 'load-more-hint';
+    const grid = document.getElementById('postcardGrid');
+    grid.parentElement.insertBefore(hint, grid.nextSibling);
+  }
+
+  if (displayedCount >= currentFiltered.length) {
+    hint.textContent = currentFiltered.length > PAGE_SIZE ? `已显示全部 ${currentFiltered.length} 张明信片` : '';
+    hint.className = 'load-more-hint done';
+  } else {
+    hint.textContent = `已加载 ${displayedCount}/${currentFiltered.length}，继续滚动查看更多`;
+    hint.className = 'load-more-hint';
+  }
+}
+
+let loadMoreObserver = null;
+function setupLoadMore() {
+  if (loadMoreObserver) loadMoreObserver.disconnect();
+
+  const hint = document.getElementById('loadMoreHint');
+  if (!hint || displayedCount >= currentFiltered.length) return;
+
+  loadMoreObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && displayedCount < currentFiltered.length) {
+      loadMorePostcards();
+      // Re-observe if more to load
+      if (displayedCount < currentFiltered.length) {
+        loadMoreObserver.observe(hint);
+      }
+    }
+  }, { rootMargin: '200px' });
+
+  loadMoreObserver.observe(hint);
 }
 
 function buildPostcardSlot(msg) {
