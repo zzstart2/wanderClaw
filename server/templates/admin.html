@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>🦐 虾游 · 管理后台</title>
+  <style>
+    :root {
+      --bg: #121210; --surface: #1a1918; --surface2: #222120;
+      --border: #3a3632; --accent: #e8734a; --accent2: #f0a868;
+      --accent3: #6bbf8a; --warn: #f5a623; --red: #ff6b6b;
+      --text: #f0ece8; --text2: #9a918a; --text3: #5a5550;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system,'PingFang SC',sans-serif; font-size: 14px; }
+    .top-bar { padding: 16px 28px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    .top-bar .logo { font-size: 22px; }
+    .top-bar .brand { font-weight: 700; }
+    .top-bar .tag { font-size: 11px; background: rgba(232,115,74,0.15); color: var(--accent); border: 1px solid rgba(232,115,74,0.25); padding: 2px 8px; border-radius: 8px; margin-left: 8px; }
+    .container { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; display: flex; justify-content: space-between; align-items: center; }
+    .card-body { padding: 20px; }
+    .stat { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+    .stat-label { font-size: 12px; color: var(--text2); }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: #d4623a; }
+    .btn-sm { padding: 4px 10px; font-size: 11px; }
+    .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+    input[type="number"] { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--text); font-size: 13px; width: 70px; outline: none; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 8px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text3); border-bottom: 1px solid var(--border); }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text2); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .mono { font-family: 'SF Mono', monospace; font-size: 12px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+    .badge-green { background: rgba(107,191,138,0.12); color: var(--accent3); border: 1px solid rgba(107,191,138,0.2); }
+    .badge-red { background: rgba(255,107,107,0.12); color: var(--red); border: 1px solid rgba(255,107,107,0.2); }
+    .badge-gray { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
+    .code-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-family: 'SF Mono', monospace; font-size: 12px; color: var(--accent2); margin-top: 10px; white-space: pre-wrap; word-break: break-all; }
+    .invite-list { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
+    .invite-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: var(--surface2); border-radius: 6px; }
+    .invite-code { font-family: monospace; font-size: 13px; font-weight: 600; letter-spacing: 1px; }
+    .copy-btn { font-size: 11px; background: transparent; border: 1px solid var(--border); border-radius: 4px; color: var(--text2); padding: 2px 8px; cursor: pointer; }
+    .copy-btn:hover { color: var(--text); }
+    .empty-state { text-align: center; padding: 32px; color: var(--text3); font-size: 13px; }
+    .alert { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 12px; }
+    .alert-success { background: rgba(107,191,138,0.1); border: 1px solid rgba(107,191,138,0.2); color: var(--accent3); }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <span class="logo">🦐</span>
+  <span class="brand">WanderClaw</span>
+  <span class="tag">管理后台</span>
+</div>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="grid">
+    <div class="card">
+      <div class="card-header">用户总数</div>
+      <div class="card-body">
+        <div class="stat" id="statUsers" style="color:var(--accent)">—</div>
+        <div class="stat-label">已完成配置的虾游用户</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">邀请码状态</div>
+      <div class="card-body">
+        <div class="stat" id="statInvites" style="color:var(--accent3)">—</div>
+        <div class="stat-label">剩余可用邀请码 / 总计</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invite codes -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+      <span>邀请码管理</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" id="inviteCount" value="5" min="1" max="20" />
+        <button class="btn btn-primary btn-sm" onclick="generateInvites()">生成邀请码</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="invite-list" id="inviteList">
+        <div class="empty-state">加载中...</div>
+      </div>
+      <div id="generateAlert" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Pairing -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+      <span>🔗 配对审批</span>
+      <button class="btn btn-ghost btn-sm" onclick="loadPairing()">刷新待审批</button>
+    </div>
+    <div class="card-body">
+      <p style="color:var(--text2);font-size:13px;margin-bottom:14px">
+        用户完成配置后，需向其飞书 Bot 发送第一条消息，OpenClaw 会生成配对码。在下方输入该码批准连接。
+      </p>
+
+      <!-- Pending list (if openclaw pairing list works) -->
+      <div id="pairingPending" style="margin-bottom:16px"></div>
+
+      <!-- Manual approve -->
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="pairingCode" placeholder="配对码，如 75YRUMVZ"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+                 padding:8px 12px;color:var(--text);font-size:13px;font-family:monospace;
+                 width:220px;outline:none;letter-spacing:1px;text-transform:uppercase"
+          oninput="this.value=this.value.toUpperCase()"
+        />
+        <select id="pairingChannel"
+          style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+                 padding:8px 10px;color:var(--text);font-size:13px;outline:none">
+          <option value="feishu">飞书</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="approveCode()">批准</button>
+      </div>
+      <div id="pairingResult" style="margin-top:10px;font-size:13px;display:none"></div>
+
+      <!-- How-to hint -->
+      <div style="margin-top:16px;padding:12px 14px;background:rgba(240,168,104,0.06);
+                  border:1px solid rgba(240,168,104,0.15);border-radius:8px;font-size:12px;color:var(--text2)">
+        <strong style="color:var(--accent2)">配对码在哪里？</strong><br>
+        在 ECS 上运行 <code style="color:var(--warn);font-family:monospace;font-size:11px">openclaw pairing list</code>，
+        或查看 OpenClaw 日志：<code style="color:var(--warn);font-family:monospace;font-size:11px">journalctl -u openclaw -n 50</code>，
+        找到 <code style="font-family:monospace;font-size:11px;color:var(--accent3)">pairing request</code> 相关条目。
+      </div>
+    </div>
+  </div>
+
+  <!-- Users table -->
+  <div class="card">
+    <div class="card-header">
+      <span>用户列表</span>
+      <button class="btn btn-ghost btn-sm" onclick="loadAll()">刷新</button>
+    </div>
+    <div class="card-body" style="padding:0">
+      <table>
+        <thead>
+          <tr>
+            <th>用户</th>
+            <th>Agent ID</th>
+            <th>飞书 App ID</th>
+            <th>兴趣话题</th>
+            <th>注册时间</th>
+          </tr>
+        </thead>
+        <tbody id="userTable">
+          <tr><td colspan="5" class="empty-state">加载中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Deploy instructions -->
+  <div class="card" style="margin-top:20px">
+    <div class="card-header">部署说明</div>
+    <div class="card-body">
+      <p style="color:var(--text2);font-size:13px;margin-bottom:10px">在 ECS 上启动 Onboarding Server：</p>
+      <div class="code-block">cd /root/wanderClaw/onboarding
+pip3 install -q  # 无额外依赖，使用标准库
+python3 server.py  # 默认 0.0.0.0:8080
+
+# 后台运行
+nohup python3 server.py > /var/log/wanderclaw-onboarding.log 2>&1 &
+
+# 生成首批邀请码
+curl -s -X POST http://localhost:8080/api/admin/generate-invites \
+  -H 'Content-Type: application/json' \
+  -d '{"count": 10}' | python3 -m json.tool</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+async function loadAll() {
+  await Promise.all([loadUsers(), loadInvites()]);
+}
+
+async function loadUsers() {
+  try {
+    const res = await fetch('/api/users');
+    const users = await res.json();
+    document.getElementById('statUsers').textContent = users.length;
+    const tbody = document.getElementById('userTable');
+    if (!users.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-state">暂无用户</td></tr>';
+      return;
+    }
+    tbody.innerHTML = users.map(u => `
+      <tr>
+        <td><strong>${u.agent_emoji || '🦐'} ${u.agent_name || u.user_name}</strong><br>
+            <span style="color:var(--text3);font-size:11px">${u.user_name}</span></td>
+        <td class="mono">${u.agent_id || (u.workspace||'').split('/').pop() || '—'}</td>
+        <td class="mono">${(u.feishu_app_id||'').slice(0,12)}••</td>
+        <td style="max-width:180px;font-size:11px;color:var(--text2)">${(u.interests||[]).slice(0,3).join(', ')}${(u.interests||[]).length > 3 ? '...' : ''}</td>
+        <td style="font-size:11px;color:var(--text3)">${(u.created_at||'').slice(0,10)}</td>
+      </tr>`).join('');
+  } catch(e) {
+    document.getElementById('userTable').innerHTML = '<tr><td colspan="5" class="empty-state" style="color:var(--red)">无法连接服务器</td></tr>';
+  }
+}
+
+async function loadInvites() {
+  try {
+    const res = await fetch('/api/invites');
+    const invites = await res.json();
+    const all = Object.entries(invites);
+    const avail = all.filter(([,v]) => !v.used);
+    document.getElementById('statInvites').textContent = `${avail.length} / ${all.length}`;
+
+    const list = document.getElementById('inviteList');
+    if (!all.length) {
+      list.innerHTML = '<div class="empty-state">还没有邀请码，点击右上角生成</div>';
+      return;
+    }
+    list.innerHTML = all.map(([code, info]) => `
+      <div class="invite-row">
+        <span class="invite-code" style="color:${info.used ? 'var(--text3)' : 'var(--text)'}">${code}</span>
+        ${info.used
+          ? `<span class="badge badge-gray">已使用 · ${info.used_by||''}</span>`
+          : `<span style="display:flex;gap:6px;align-items:center">
+               <span class="badge badge-green">可用</span>
+               <button class="copy-btn" onclick="copyCode('${code}')">复制</button>
+             </span>`
+        }
+      </div>`).join('');
+  } catch(e) {
+    document.getElementById('statInvites').textContent = '—';
+  }
+}
+
+async function generateInvites() {
+  const count = parseInt(document.getElementById('inviteCount').value) || 5;
+  try {
+    const res = await fetch('/api/admin/generate-invites', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({count})
+    });
+    const data = await res.json();
+    const alertEl = document.getElementById('generateAlert');
+    alertEl.className = 'alert alert-success';
+    alertEl.textContent = `✓ 已生成 ${data.codes.length} 个邀请码`;
+    alertEl.style.display = 'block';
+    setTimeout(() => alertEl.style.display = 'none', 3000);
+    loadInvites();
+  } catch(e) {
+    alert('生成失败，请检查服务器连接');
+  }
+}
+
+function copyCode(code) {
+  navigator.clipboard.writeText(code).then(() => {
+    // brief feedback
+    const btns = document.querySelectorAll('.copy-btn');
+    btns.forEach(b => { if (b.getAttribute('onclick').includes(code)) { b.textContent = '✓'; setTimeout(() => b.textContent = '复制', 1200); } });
+  });
+}
+
+async function loadPairing() {
+  const el = document.getElementById('pairingPending');
+  try {
+    const res = await fetch('/api/pairing/list');
+    const data = await res.json();
+    if (!data.ok) {
+      el.innerHTML = `<div style="font-size:12px;color:var(--text3)">${data.message || '无法获取待审批列表'}</div>`;
+      return;
+    }
+    // 如果 openclaw pairing list --json 返回数组
+    const items = Array.isArray(data.data) ? data.data : [];
+    if (!items.length) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--text3)">暂无待审批配对请求</div>';
+      return;
+    }
+    el.innerHTML = `
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">待审批 ${items.length} 条：</div>
+      ${items.map(p => `
+        <div style="display:flex;justify-content:space-between;align-items:center;
+                    padding:8px 12px;background:rgba(245,166,35,0.08);
+                    border:1px solid rgba(245,166,35,0.2);border-radius:6px;margin-bottom:6px">
+          <div>
+            <span style="font-family:monospace;font-weight:700;color:var(--warn);letter-spacing:1px">${p.code || p}</span>
+            ${p.channel ? `<span style="font-size:11px;color:var(--text3);margin-left:8px">${p.channel}</span>` : ''}
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="quickApprove('${p.code || p}')">批准</button>
+        </div>`).join('')}`;
+  } catch(e) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text3)">无法连接服务器</div>';
+  }
+}
+
+function quickApprove(code) {
+  document.getElementById('pairingCode').value = code;
+  approveCode();
+}
+
+async function approveCode() {
+  const code = document.getElementById('pairingCode').value.trim();
+  const channel = document.getElementById('pairingChannel').value;
+  const resultEl = document.getElementById('pairingResult');
+
+  if (!code) { resultEl.style.display='block'; resultEl.style.color='var(--red)'; resultEl.textContent='请输入配对码'; return; }
+
+  try {
+    const res = await fetch('/api/pairing/approve', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ code, channel })
+    });
+    const data = await res.json();
+    resultEl.style.display = 'block';
+    if (data.ok) {
+      resultEl.style.color = 'var(--accent3)';
+      resultEl.textContent = `✓ ${data.message} (${code})`;
+      document.getElementById('pairingCode').value = '';
+      loadPairing();
+    } else {
+      resultEl.style.color = 'var(--red)';
+      resultEl.textContent = `✗ ${data.message}`;
+    }
+  } catch(e) {
+    resultEl.style.display = 'block';
+    resultEl.style.color = 'var(--red)';
+    resultEl.textContent = '无法连接服务器';
+  }
+}
+
+loadAll();
+loadPairing();
+setInterval(loadAll, 30000);
+setInterval(loadPairing, 15000);  // 每 15 秒刷新配对状态
+</script>
+</body>
+</html>
