@@ -44,15 +44,75 @@
 
 ## postcards.json 条目格式
 
+### 明信片
+
 ```json
 {
   "id": "001",
+  "type": "postcard",
   "title": "明信片标题（50字以内）",
   "file": "wanderclaw/postcards/001-slug.md",
   "score": 8.2,
   "direction": "探索方向",
   "url": "https://原文链接",
   "created": "2026-03-25T09:00:00+08:00",
-  "status": "pushed"
+  "status": "pushed",
+  "character_card": null
 }
 ```
+
+### 明信片 + 人物卡
+
+```json
+{
+  "id": "012",
+  "type": "postcard",
+  "title": "明信片标题",
+  "file": "wanderclaw/postcards/012-slug.md",
+  "score": 8.5,
+  "direction": "探索方向",
+  "url": "https://原文链接",
+  "created": "2026-03-25T15:00:00+08:00",
+  "status": "pushed",
+  "character_card": {
+    "name": "Rodney Brooks",
+    "file": "wanderclaw/postcards/012-character-rodney-brooks.md",
+    "summary": "MIT CSAIL 前主任，iRobot 创始人。「行为主义机器人学」奠基人。"
+  }
+}
+```
+
+### 圆桌会议 + 人物卡
+
+```json
+{
+  "id": "015",
+  "type": "roundtable",
+  "title": "圆桌标题",
+  "file": "wanderclaw/postcards/015-roundtable-topic.md",
+  "score": 8.0,
+  "direction": "探索方向",
+  "url": "https://相关链接",
+  "created": "2026-03-26T09:00:00+08:00",
+  "status": "pushed",
+  "character_card": {
+    "name": "费曼 & Rodney Brooks",
+    "file": "wanderclaw/postcards/015-character-feynman-brooks.md",
+    "summary": "物理学家 × 机器人学家，关于「理解」的定义之争。"
+  }
+}
+```
+
+## 人物卡文件格式
+
+存储路径：`wanderclaw/postcards/<编号>-character-<人名slug>.md`
+
+```
+👤 人物卡 — <人名>
+
+<这人是谁，1句话>
+<为什么在这个话题上重要，1句话>
+<核心观点或贡献，1-2句话>
+```
+
+50-100 字，不要写成传记。

@@ -7,13 +7,13 @@
 
 ## 执行前：读取状态
 
-1. 读取 `shrimp-wanderer/state.json`，了解：
+1. 读取 `wanderclaw/state.json`，了解：
    - 当前处于哪个探索阶段（cold_start / trust_building / mature）
    - 今天已发了几条消息（daily_message_count）
    - 上次探索了什么方向（避免重复）
    - 明信片总数（postcard_count）
 
-2. 读取 `shrimp-wanderer/interest-graph.json`，了解：
+2. 读取 `wanderclaw/interest-graph.json`，了解：
    - 当前兴趣方向及权重
    - 哪些方向最近没探索过（优先）
 
@@ -79,6 +79,16 @@
 
 ## 第五步：产出
 
+### 产出类型
+
+虾游有三种产出，组合关系如下：
+
+- **明信片 alone**（50-70%）：普通探索发现
+- **明信片 + 人物卡**（30-50%）：发现中有值得介绍的关键人物
+- **圆桌会议 + 人物卡**（100%）：圆桌天然有嘉宾，必须附带人物卡
+
+人物卡不是独立事件，是明信片/圆桌的**附件**——帮用户理解事件中的关键人物。
+
 ### 评分 ≥ 7 → 明信片 + 推送 + 归档
 
 写一张明信片（格式见 SOUL.md），内容包含：
@@ -89,7 +99,7 @@
 - 原文链接
 
 明信片写好后：
-1. 保存到 `shrimp-wanderer/postcards/[编号]-[主题].md`（如该目录不存在则跳过）
+1. 保存到 `wanderclaw/postcards/[编号]-[主题].md`（如该目录不存在则跳过）
 2. **写入 outbox.json**（重要）：读取 workspace 根目录的 `outbox.json`，追加以下对象，再写回文件。如文件不存在或内容为空则初始化为 `[]`：
    ```json
    {
@@ -104,9 +114,74 @@
    ```
 3. 更新 state.json：postcard_count +1，last_postcard 更新时间，daily_message_count +1
 
+### 人物卡触发
+
+明信片写完后，判断是否附带人物卡：
+
+**触发条件**（满足任一即触发）：
+- 发现内容有一个明确的关键人物（论文作者、创始人、理论提出者等）
+- 这个人物对用户理解这个发现**很重要**
+- 用户可能不认识这个人，但认识了会大大加深理解
+
+**概率控制**：即使满足条件，也只有 30-50% 概率产出。不要每张明信片都带人物卡，会审美疲劳。
+
+**人物卡格式**：
+
+```
+👤 人物卡 — <人名>
+
+<1-2句话说明这人是谁>
+<为什么他在这个话题上重要>
+<他的核心观点或贡献（1-2句）>
+```
+
+人物卡控制在 **50-100 字**，不要写成人物传记。
+
+人物卡保存到 `wanderclaw/postcards/[编号]-character-[人名slug].md`，并在明信片正文末尾（链接之前）加一行引用：
+
+```
+📎 附：[人名] 的人物卡
+```
+
+同时在 outbox.json 中，明信片条目增加 `character_card` 字段：
+
+```json
+{
+  "type": "postcard",
+  "postcard_id": "012",
+  "content": "...",
+  "character_card": {
+    "name": "Rodney Brooks",
+    "file": "wanderclaw/postcards/012-character-rodney-brooks.md",
+    "summary": "MIT CSAIL 前主任，iRobot 创始人。「行为主义机器人学」奠基人。"
+  }
+}
+```
+
+### 圆桌会议产出
+
+圆桌会议（见 SOUL.md「圆桌奇遇」章节）**必须**附带人物卡，介绍圆桌中最关键的 1-2 位嘉宾。
+
+圆桌明信片保存到 `wanderclaw/postcards/[编号]-roundtable-[主题].md`。
+
+outbox.json 条目的 `type` 为 `"roundtable"`（不是 `"postcard"`）：
+
+```json
+{
+  "type": "roundtable",
+  "postcard_id": "015",
+  "content": "...",
+  "character_card": {
+    "name": "费曼 & Rodney Brooks",
+    "file": "wanderclaw/postcards/015-character-feynman-brooks.md",
+    "summary": "..."
+  }
+}
+```
+
 ### 评分 5-7 → 探索日记 + 归档
 
-写一段探索日记，追加到今天的日记文件 `shrimp-wanderer/exploration-log/YYYY-MM-DD.md`。
+写一段探索日记，追加到今天的日记文件 `wanderclaw/exploration-log/YYYY-MM-DD.md`。
 
 内容：探索方向 + 读了什么 + 发现了什么 + 为什么没出明信片
 
@@ -120,11 +195,11 @@
 
 ## 第六步：更新状态
 
-更新 `shrimp-wanderer/state.json`：
+更新 `wanderclaw/state.json`：
 - last_exploration 更新为当前时间
 - 将本次探索的方向写入 exploration_history（保留最近20条）
 
-更新 `shrimp-wanderer/interest-graph.json`：
+更新 `wanderclaw/interest-graph.json`：
 - 本次探索的主题：last_explored 更新，explore_count +1
 - 如果发现了值得追踪的子话题，写入 discovered_topics
 - weight 衰减：超过30天未探索的兴趣，weight × 0.9
@@ -159,7 +234,7 @@
 
 ## 知识归档格式
 
-存入 `shrimp-wanderer/knowledge-base/[主题]/` 目录，文件名 `YYYY-MM-DD-[简短标题].md`：
+存入 `wanderclaw/knowledge-base/[主题]/` 目录，文件名 `YYYY-MM-DD-[简短标题].md`：
 
 ```markdown
 # [标题]
