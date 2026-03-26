@@ -22,7 +22,7 @@ openclaw cron add \
   --cron "0 9 * * *" --tz "$TZ" \
   --session isolated \
   --announce --channel last \
-  --message "读取 wanderclaw/state.json 和 wanderclaw/interest-graph.json，按 references/EXPLORER.md 的六步流程执行一次深度探索。探索完把明信片回复出来。" \
+  --message "读取 wanderclaw/state.json 和 wanderclaw/interest-graph.json，按 wanderclaw/EXPLORER.md 的六步流程执行一次深度探索。探索完把明信片回复出来。" \
   2>/dev/null && echo "  ✓ 晨间探索 09:00" || echo "  ✗ 晨间探索注册失败"
 
 # 中午轻度扫描（12:00）
@@ -41,7 +41,7 @@ openclaw cron add \
   --cron "0 15 * * *" --tz "$TZ" \
   --session isolated \
   --announce --channel last \
-  --message "执行一次深度探索，参考 references/EXPLORER.md。" \
+  --message "执行一次深度探索，参考 wanderclaw/EXPLORER.md。" \
   2>/dev/null && echo "  ✓ 午后探索 15:00" || echo "  ✗ 午后探索注册失败"
 
 # 晚间轻度扫描（20:00）

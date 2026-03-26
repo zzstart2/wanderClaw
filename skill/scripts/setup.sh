@@ -51,6 +51,14 @@ else
   echo "  ○ sources.yaml 已存在（用户自定义），跳过"
 fi
 
+# 复制核心引擎文件到 workspace（cron isolated session 需要直接访问）
+cp "$SKILL_DIR/references/EXPLORER.md" "$WC_DIR/EXPLORER.md"
+echo "  ✓ EXPLORER.md 已复制"
+cp "$SKILL_DIR/references/SOUL.md" "$WC_DIR/SOUL.md"
+echo "  ✓ SOUL.md 已复制"
+cp "$SKILL_DIR/references/postcard-format.md" "$WC_DIR/postcard-format.md"
+echo "  ✓ postcard-format.md 已复制"
+
 echo ""
 echo "✅ 虾游初始化完成！"
 echo ""
