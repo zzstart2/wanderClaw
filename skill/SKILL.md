@@ -111,7 +111,9 @@ cp {baseDir}/references/sources.yaml wanderclaw/sources.yaml
 □ 1. 明信片文件写入 wanderclaw/postcards/pc-NNN.md
 □ 2. postcards.json 追加条目（读取 → 追加 → 写回）
 □ 3. state.json 更新：postcard_count +1, cold_start_progress +1, last_exploration 更新
-□ 4. 向用户发送明信片内容（直接回复）
+□ 4. 【推送明信片】把明信片的完整正文直接作为消息回复给用户。
+     不是说"我写了一张明信片"，而是把 pc-NNN.md 的全部内容（标题+正文+链接）
+     原样发出去，让用户直接在聊天窗口看到完整明信片。
 □ 5. 如果 cold_start_progress < 3，继续下一次探索
 ```
 
@@ -137,7 +139,7 @@ cp {baseDir}/references/sources.yaml wanderclaw/sources.yaml
 1. `write` 明信片到 `wanderclaw/postcards/pc-001.md`
 2. `read` wanderclaw/postcards.json → 追加新条目 → `write` 回去
 3. `read` wanderclaw/state.json → 设 `cold_start_progress: 1`, `postcard_count: 1` → `write` 回去
-4. 回复用户明信片内容
+4. 把 pc-001.md 的**完整内容**（标题+正文+链接）作为消息回复给用户
 
 ### 第 2 次（cold_start_progress: 1 → 2）：次要兴趣 × 跨领域
 
@@ -145,7 +147,7 @@ cp {baseDir}/references/sources.yaml wanderclaw/sources.yaml
 - 搜索时刻意找两个兴趣方向的**交叉点**
 - 目标：展示"虾游能发现你没想到的关联"
 
-完成后**必须**：同上 4 步（编号 pc-002，cold_start_progress: 2，postcard_count: 2）
+完成后**必须**：同上 4 步（编号 pc-002，cold_start_progress: 2，postcard_count: 2），把 pc-002.md 完整内容回复给用户
 
 ### 第 3 次（cold_start_progress: 2 → 3）：Serendipity 惊喜
 
@@ -212,7 +214,7 @@ cp {baseDir}/references/sources.yaml wanderclaw/sources.yaml
 
 **执行**：严格遵循 `references/EXPLORER.md` 的六步流程。
 
-**推送**：评分 ≥ 7 推送，5-7 归档不推送，每日上限 5 条。
+**推送**：评分 ≥ 7 时，把明信片 .md 文件的**完整内容**作为消息直接回复给用户（不是说"我写了一张明信片"，而是把全文发出来）。评分 5-7 只归档不推送。每日上限 5 条。
 
 ### 3. 回顾模式
 
