@@ -84,7 +84,11 @@ cp {baseDir}/references/sources.yaml wanderclaw/sources.yaml
 
 > ✅ 搞定了。我现在出去转三圈，给你带点东西回来 🦐
 
-然后**立刻进入下面的「Cold Start 三连探索」流程**。
+然后**只做第 1 次探索**（按下面「Cold Start 三连探索」的第 1 次流程）。
+
+做完第 1 次后就停。后续第 2、3 次会由用户下次发消息时触发（检查 2 会检测 cold_start_progress < 3 并继续）。
+
+**不要在一个 turn 里连续做 3 次探索。** 每个 turn 只做 1 次。
 
 ---
 
@@ -92,9 +96,9 @@ cp {baseDir}/references/sources.yaml wanderclaw/sources.yaml
 
 读取 `wanderclaw/state.json` 中的 `cold_start_progress`（0、1、或 2）。
 
-**直接进入下面的三连探索流程，从第 N+1 次开始。**
+**做第 N+1 次探索（只做 1 次）。** 不需要打招呼，不需要重新收集兴趣。
 
-不需要打招呼，不需要重新收集兴趣。
+做完这 1 次探索后停止。下次用户发消息时会再次检查，继续下一次。
 
 ---
 
