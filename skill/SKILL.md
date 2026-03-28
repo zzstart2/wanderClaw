@@ -76,29 +76,33 @@ cp {baseDir}/references/sources.yaml wanderclaw/sources.yaml
 
 **关键：在 state.json 中设置 `"cold_start_progress": 0`**
 
-**Step 4：注册 cron**
+**Step 4：注册 cron + 三连探索**
 
-执行 `bash {baseDir}/scripts/schedule-cron.sh`。失败则跳过。
+执行：`exec bash {baseDir}/scripts/schedule-cron.sh`
 
-**Step 5：开始三连探索**
+这个脚本会同时注册：
+- 4 个日常探索 cron（09:00/12:00/15:00/20:00）
+- 3 个一次性冷启动 cron（30秒后/4分钟后/8分钟后，各做 1 次探索）
 
-> ✅ 搞定了。我现在出去转三圈，给你带点东西回来 🦐
+**你不需要自己做任何探索。脚本注册的定时任务会自动完成。**
 
-然后**只做第 1 次探索**（按下面「Cold Start 三连探索」的第 1 次流程）。
+如果脚本执行失败，告知用户手动注册方式。
 
-做完第 1 次后就停。后续第 2、3 次会由用户下次发消息时触发（检查 2 会检测 cold_start_progress < 3 并继续）。
+**Step 5：告别**
 
-**不要在一个 turn 里连续做 3 次探索。** 每个 turn 只做 1 次。
+> ✅ 搞定了！定时探索设好了，我马上出门转三圈。
+> 明信片会在接下来几分钟内陆续送到，之后每天 9 点、12 点、15 点、20 点我会自己出去逛。
+> 想聊天随时找我 🦐
 
 ---
 
 ### 检查 2：Cold Start 未完成（state.json 存在但 cold_start_progress < 3）
 
-读取 `wanderclaw/state.json` 中的 `cold_start_progress`（0、1、或 2）。
+三连探索由一次性 cron 任务自动驱动（Step 5 注册的）。如果用户在三连探索期间发消息：
 
-**做第 N+1 次探索（只做 1 次）。** 不需要打招呼，不需要重新收集兴趣。
-
-做完这 1 次探索后停止。下次用户发消息时会再次检查，继续下一次。
+- 正常用虾游口吻回复对话
+- 不需要手动触发探索
+- 告诉用户「我正在外面逛呢，明信片马上就到 🦐」
 
 ---
 
