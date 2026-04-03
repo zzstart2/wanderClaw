@@ -118,6 +118,30 @@ regular:
       tags: [science, research]
       trust: 6
 
+    - name: "Reddit - r/technology"
+      url: "https://reddit.com/r/technology"
+      search_pattern: "site:reddit.com/r/technology"
+      tags: [tech, industry, policy]
+      trust: 6
+
+    - name: "Reddit - r/todayilearned"
+      url: "https://reddit.com/r/todayilearned"
+      search_pattern: "site:reddit.com/r/todayilearned"
+      tags: [trivia, curiosity, serendipity]
+      trust: 5
+
+    - name: "Hacker News"
+      url: "https://news.ycombinator.com"
+      search_pattern: "site:news.ycombinator.com"
+      tags: [tech, startups, discussion]
+      trust: 8
+
+    - name: "Product Hunt"
+      url: "https://www.producthunt.com"
+      search_pattern: "site:producthunt.com"
+      tags: [products, startups, launches]
+      trust: 6
+
   blogs:
     - name: "Wait But Why"
       url: "https://waitbutwhy.com"
@@ -149,7 +173,23 @@ serendipity:
     - "关注作者的其他作品"
     - "搜索冷门但精准的关键词"
     - "逆向：搜索'被低估的'、'反直觉的'、'没人谈的'"
+    - "社会化发现：Reddit r/todayilearned 热门帖 + Product Hunt 新品"
   quality_gate: 8
+  social_sources:
+    - name: "Reddit - r/todayilearned"
+      url: "https://reddit.com/r/todayilearned"
+      search_pattern: "site:reddit.com/r/todayilearned"
+      tags: [trivia, curiosity, serendipity]
+
+    - name: "Product Hunt"
+      url: "https://www.producthunt.com"
+      search_pattern: "site:producthunt.com"
+      tags: [products, startups, launches]
+
+    - name: "Hacker News - Show HN"
+      url: "https://news.ycombinator.com/show"
+      search_pattern: "site:news.ycombinator.com \"Show HN\""
+      tags: [projects, demos, indie]
 
 # ============================================================
 # 探索策略（随阶段变化）

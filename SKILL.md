@@ -216,6 +216,13 @@ cp {baseDir}/references/sources.yaml wanderclaw/sources.yaml
 - 用户问"最近发现了什么" → 列出最近 5 张明信片
 - 用户说"对 XX 没兴趣了" → 降低权重
 
+**反馈识别**：
+- 用户回复 👍 或包含"好"/"不错"/"有趣" → 对上一张明信片的方向 weight +0.1（上限 0.95）
+- 用户回复 👎 或包含"无聊"/"没意思"/"不感兴趣" → 对上一张明信片的方向 weight -0.15（下限 0.3）
+- 更新 `wanderclaw/interest-graph.json` 中对应方向的 weight
+- 更新 `wanderclaw/state.json` 中的 `feedback_stats: { likes: N, dislikes: N }`
+- 收到 👍 时回复简短感谢（如"记住了 🦐"），收到 👎 时回复理解（如"下次换个方向"）
+
 ### 2. 探索模式
 
 **触发**：用户说"探索"/"出发"/"找点有趣的"，或 cron 定时触发。

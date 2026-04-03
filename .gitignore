@@ -1,6 +1,9 @@
 # Runtime data (generated per-user, not part of the skill)
 wanderclaw/
 
+# Dependencies
+node_modules/
+
 # OS
 .DS_Store
 Thumbs.db

@@ -80,6 +80,28 @@
 
 综合评分 = (新颖度 + 深度值 + 关联度) / 3
 
+### 圆桌奇遇判断
+
+在评估完成后，检查是否触发圆桌奇遇（约 10% 概率）：
+
+**触发条件**（同时满足）：
+1. 本次探索发现与 interest-graph.json 中**两个不同方向**都有交叉
+2. 综合评分 ≥ 7.5
+3. 随机概率通过（10%，即十次探索约触发一次）
+4. 上次圆桌距今 ≥ 7 天
+
+**触发后**：
+- 跳过普通明信片产出，改为圆桌产出
+- 单 Agent 角色扮演 2-3 个"嘉宾"（真实人物），模拟圆桌讨论
+- 控制在 500-800 字
+- 按 SOUL.md「圆桌奇遇」章节的格式和人格指引写作
+- 对谈 6-10 轮，有碰撞、追问、反驳
+- 保存到 `wanderclaw/postcards/[编号]-roundtable-[主题slug].md`
+- outbox.json 条目 type 设为 `"roundtable"`
+- **必须附带人物卡**，介绍 1-2 位关键嘉宾
+
+**不触发**：继续走普通明信片产出流程。
+
 ---
 
 ## 第五步：产出
@@ -127,7 +149,20 @@
      "postcard_id": "<明信片编号，如 004>"
    }
    ```
-3. 更新 state.json：postcard_count +1，last_postcard 更新时间，daily_message_count +1
+3. **写入 postcards.json**（带校验 + 回滚）：
+   ```
+   a. 读取现有 wanderclaw/postcards.json
+   b. 如果内容不是有效 JSON 数组 → 备份为 postcards.json.bak，初始化为 []
+   c. 追加新条目到数组
+   d. 写回 postcards.json
+   e. 立即重读文件验证：如果读回来不是有效 JSON 数组 → 回滚到备份文件
+   f. 如果校验失败：在 wanderclaw/exploration-log/ 记录写入错误，不覆盖原文件
+   ```
+4. 更新 state.json：postcard_count +1，last_postcard 更新时间，daily_message_count +1
+5. **推送明信片时，在末尾附加反馈提示行**：
+   ```
+   💬 回复「👍」或「👎」告诉我这张怎么样
+   ```
 
 ### 人物卡触发
 
