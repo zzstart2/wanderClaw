@@ -130,12 +130,6 @@ regular:
       tags: [trivia, curiosity, serendipity]
       trust: 5
 
-    - name: "Hacker News"
-      url: "https://news.ycombinator.com"
-      search_pattern: "site:news.ycombinator.com"
-      tags: [tech, startups, discussion]
-      trust: 8
-
     - name: "Product Hunt"
       url: "https://www.producthunt.com"
       search_pattern: "site:producthunt.com"
