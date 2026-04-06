@@ -16,7 +16,6 @@ openclaw cron add \
   --cron "0 9 * * *" --tz "$TZ" \
   --session isolated \
   --timeout 300 \
-  --announce --channel last \
   --message "按 wanderclaw/EXPLORER.md 六步流程执行一次深度探索。如果搜索失败，记录到 wanderclaw/exploration-log/ 并正常退出。探索完把明信片完整正文回复出来。" \
   2>/dev/null && echo "  ✓ 晨间探索 09:00" || echo "  ✗ 晨间探索注册失败"
 
@@ -24,9 +23,8 @@ openclaw cron add \
   --name "虾游轻度扫描(午)" \
   --cron "0 12 * * *" --tz "$TZ" \
   --session isolated \
-  --model sonnet \
+  --model "minimax-cn/MiniMax-M2.5" \
   --timeout 300 \
-  --announce --channel last \
   --message "轻度扫描：检查 wanderclaw/sources.yaml 核心水域有无新内容，发现好的写明信片。如果搜索失败，记录日志并正常退出。把明信片完整正文回复出来。" \
   2>/dev/null && echo "  ✓ 午间扫描 12:00" || echo "  ✗ 午间扫描注册失败"
 
@@ -35,7 +33,6 @@ openclaw cron add \
   --cron "0 15 * * *" --tz "$TZ" \
   --session isolated \
   --timeout 300 \
-  --announce --channel last \
   --message "按 wanderclaw/EXPLORER.md 执行一次深度探索。如果搜索失败，记录到 wanderclaw/exploration-log/ 并正常退出。把明信片完整正文回复出来。" \
   2>/dev/null && echo "  ✓ 午后探索 15:00" || echo "  ✗ 午后探索注册失败"
 
@@ -43,9 +40,8 @@ openclaw cron add \
   --name "虾游轻度扫描(晚)" \
   --cron "0 20 * * *" --tz "$TZ" \
   --session isolated \
-  --model sonnet \
+  --model "minimax-cn/MiniMax-M2.5" \
   --timeout 300 \
-  --announce --channel last \
   --message "晚间轻度扫描，检查有无值得寄明信片的新发现。如果搜索失败，记录日志并正常退出。把明信片完整正文回复出来。" \
   2>/dev/null && echo "  ✓ 晚间扫描 20:00" || echo "  ✗ 晚间扫描注册失败"
 
