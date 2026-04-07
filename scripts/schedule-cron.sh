@@ -67,7 +67,7 @@ else
       --delete-after-run \
       --session isolated \
       --timeout 300 \
-      --announce --channel last \
+      --announce --channel feishu --best-effort-deliver \
       --message "【虾游冷启动探索 第1次】读取 wanderclaw/state.json，如果 cold_start_progress >= 1 则回复「已完成」并停止。否则按 EXPLORER.md 执行 1 次探索（核心水域），写 pc-001.md，更新 postcards.json 和 state.json，把明信片完整正文回复出来。如果搜索失败，记录日志并正常退出。" \
       2>/dev/null && echo "  ✓ 冷启动第1次 +30s" || echo "  ✗ 冷启动第1次注册失败"
   fi
@@ -79,7 +79,7 @@ else
       --delete-after-run \
       --session isolated \
       --timeout 300 \
-      --announce --channel last \
+      --announce --channel feishu --best-effort-deliver \
       --message "【虾游冷启动探索 第2次】读取 wanderclaw/state.json，如果 cold_start_progress >= 2 则回复「已完成」并停止。否则执行 1 次跨领域探索，写 pc-002.md，更新 postcards.json 和 state.json，把完整明信片回复出来。如果搜索失败，记录日志并正常退出。" \
       2>/dev/null && echo "  ✓ 冷启动第2次 +4m" || echo "  ✗ 冷启动第2次注册失败"
   fi
@@ -91,7 +91,7 @@ else
       --delete-after-run \
       --session isolated \
       --timeout 300 \
-      --announce --channel last \
+      --announce --channel feishu --best-effort-deliver \
       --message "【虾游冷启动探索 第3次-惊喜】读取 wanderclaw/state.json，如果 cold_start_progress >= 3 则回复「已完成」并停止。否则执行 1 次随机惊喜探索，写 pc-003.md，更新 postcards.json 和 state.json，把完整明信片回复出来。如果搜索失败，记录日志并正常退出。" \
       2>/dev/null && echo "  ✓ 冷启动第3次 +8m" || echo "  ✗ 冷启动第3次注册失败"
   fi
