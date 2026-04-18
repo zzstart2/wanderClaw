@@ -43,6 +43,14 @@ else
   echo "  ○ postcards.json 已存在，跳过"
 fi
 
+# 初始化明信片索引（不覆盖）
+if [ ! -f "$WC_DIR/postcard-index.json" ]; then
+  echo "{}" > "$WC_DIR/postcard-index.json"
+  echo "  ✓ postcard-index.json 已创建"
+else
+  echo "  ○ postcard-index.json 已存在，跳过"
+fi
+
 # 复制信息源配置（不覆盖用户自定义）
 if [ ! -f "$WC_DIR/sources.yaml" ]; then
   cp "$SKILL_DIR/references/sources.yaml" "$WC_DIR/sources.yaml"

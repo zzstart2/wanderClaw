@@ -41,7 +41,6 @@ wanderClaw/
 │   └── interest-graph.json # 兴趣图谱模板
 ├── scripts/
 │   ├── schedule-cron.sh  # 注册定时探索 + 冷启动 cron
-│   ├── cold-start-trigger.sh # 冷启动单次探索触发
 │   └── setup.sh          # 首次安装初始化
 └── team/                 # 开发文档（BACKLOG / CHANGELOG / DECISIONS）
 ```

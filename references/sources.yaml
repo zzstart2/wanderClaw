@@ -211,3 +211,39 @@ quality_rules:
   promotion: "某源被核心水域引用3次以上 → 提升为常规水域候选"
   demotion: "某源连续3次产出低分内容 → 降级或移除"
   user_boost: "用户对来自某源的明信片有正面回复 → 该源权重+0.1"
+
+# ============================================================
+# 深潜模式专用源（每周六 22:00）
+# 只搜索长文/论文/深度报告
+# 评分门槛 ≥ 8 分才推送
+# ============================================================
+deep_dive:
+  - name: "arXiv CS/AI (长论文)"
+    url: "https://arxiv.org"
+    search_pattern: "site:arxiv.org cs.AI OR cs.LG OR cs.RO"
+    tags: [research, papers, cutting-edge]
+    trust: 10
+
+  - name: "Quanta Magazine"
+    url: "https://www.quantamagazine.org"
+    search_pattern: "site:quantamagazine.org"
+    tags: [science, math, physics, biology]
+    trust: 10
+
+  - name: "Nautilus"
+    url: "https://nautil.us"
+    search_pattern: "site:nautil.us"
+    tags: [science, philosophy, cross-disciplinary]
+    trust: 9
+
+  - name: "Wait But Why"
+    url: "https://waitbutwhy.com"
+    search_pattern: "site:waitbutwhy.com"
+    tags: [long-form, thinking, explanations]
+    trust: 9
+
+  - name: "Paul Graham Essays"
+    url: "http://paulgraham.com/articles.html"
+    search_pattern: "site:paulgraham.com"
+    tags: [startups, thinking, essays]
+    trust: 10

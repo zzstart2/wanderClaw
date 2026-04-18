@@ -63,7 +63,7 @@ else
   if [ "$PROGRESS" -lt 1 ]; then
     openclaw cron add \
       --name "虾游冷启动-第1次" \
-      --at "30s" \
+      --at "15s" \
       --delete-after-run \
       --session isolated \
       --timeout 300 \
@@ -101,3 +101,23 @@ fi
 
 echo ""
 echo "查看任务: openclaw cron list"
+
+# ========== 深潜模式（每周六 22:00）==========
+
+openclaw cron add \
+  --name "虾游深潜模式" \
+  --cron "0 22 * * 6" --tz "$TZ" \
+  --session isolated \
+  --timeout 600 \
+  --message "【深潜模式】只搜索长文/论文/深度报告（arXiv、Quanta、Nautilus、Wait But Why），产出 450-600 字明信片，评分 ≥8 分才推送。探索完把明信片完整正文回复出来。" \
+  2>/dev/null && echo "  ✓ 深潜模式 周六 22:00" || echo "  ✗ 深潜模式注册失败"
+
+# ========== 周度总结（每周日 10:00）==========
+
+openclaw cron add \
+  --name "虾游周度总结" \
+  --cron "0 10 * * 0" --tz "$TZ" \
+  --session isolated \
+  --timeout 300 \
+  --message "【周度总结】读取过去 7 天的 postcards，生成一份简要回顾（明信片数量、热门方向、用户反馈统计），推送给用户。" \
+  2>/dev/null && echo "  ✓ 周度总结 周日 10:00" || echo "  ✗ 周度总结注册失败"

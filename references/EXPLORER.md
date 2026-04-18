@@ -97,7 +97,7 @@
 - 按 SOUL.md「圆桌奇遇」章节的格式和人格指引写作
 - 对谈 6-10 轮，有碰撞、追问、反驳
 - 保存到 `wanderclaw/postcards/[编号]-roundtable-[主题slug].md`
-- outbox.json 条目 type 设为 `"roundtable"`
+- 更新 postcard-index.json 引用关系
 - **必须附带人物卡**，介绍 1-2 位关键嘉宾
 
 **不触发**：继续走普通明信片产出流程。
@@ -137,18 +137,7 @@
 
 明信片写好后：
 1. 保存到 `wanderclaw/postcards/[编号]-[主题].md`（如该目录不存在则跳过）
-2. **写入 outbox.json**（重要）：读取 workspace 根目录的 `outbox.json`，追加以下对象，再写回文件。如文件不存在或内容为空则初始化为 `[]`：
-   ```json
-   {
-     "type": "postcard",
-     "from": "agent",
-     "content": "<明信片全文，包含标题、正文、链接>",
-     "score": <综合评分数字，如 8.2>,
-     "direction": "<本次探索方向>",
-     "url": "<原文主链接>",
-     "postcard_id": "<明信片编号，如 004>"
-   }
-   ```
+2. **更新明信片索引**：读取 `wanderclaw/postcard-index.json`，扫描明信片正文中 #xxx 引用，追加新条目到索引，然后写回。格式：`{"001": ["003", "007"], "002": []}` 表示 001 引用了 003 和 007。
 3. **写入 postcards.json**（带校验 + 回滚）：
    ```
    a. 读取现有 wanderclaw/postcards.json
@@ -193,38 +182,12 @@
 📎 附：[人名] 的人物卡
 ```
 
-同时在 outbox.json 中，明信片条目增加 `character_card` 字段：
-
-```json
-{
-  "type": "postcard",
-  "postcard_id": "012",
-  "content": "...",
-  "character_card": {
-    "name": "Rodney Brooks",
-    "file": "wanderclaw/postcards/012-character-rodney-brooks.md",
-    "summary": "MIT CSAIL 前主任，iRobot 创始人。「行为主义机器人学」奠基人。"
-  }
-}
-```
+同时在 postcard-index.json 中更新引用关系。
 
 ### 圆桌会议产出
 
 圆桌会议（见 SOUL.md「圆桌奇遇」章节）**必须**附带人物卡，介绍圆桌中最关键的 1-2 位嘉宾。
 
-圆桌明信片保存到 `wanderclaw/postcards/[编号]-roundtable-[主题].md`。
-
-outbox.json 条目的 `type` 为 `"roundtable"`（不是 `"postcard"`）：
-
-```json
-{
-  "type": "roundtable",
-  "postcard_id": "015",
-  "content": "...",
-  "character_card": {
-    "name": "费曼 & Rodney Brooks",
-    "file": "wanderclaw/postcards/015-character-feynman-brooks.md",
-    "summary": "..."
   }
 }
 ```
