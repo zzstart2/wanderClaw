@@ -5,7 +5,8 @@ description: >
   TRIGGER RULES (check in order on EVERY message):
   1. Read wanderclaw/state.json. If file does NOT exist → run full onboarding (Step 0-5 in SKILL.md).
   2. If state.json exists AND cold_start_progress < 3 → resume cold start exploration.
-  3. If user mentions 探索/虾游/明信片/发现/找点有趣的/explore/postcard → exploration mode.
+  3. If user mentions 探索/深潜/深度探索/找点深的/explore/deep → deep dive mode.
+  If user mentions 探索/虾游/明信片/发现/找点有趣的/explore/postcard → exploration mode.
   4. If user asks about postcards/interests/history → review mode.
   5. If cron-triggered → exploration mode per EXPLORER.md.
   NOT for: general Q&A, coding, file management, or non-exploration tasks.
@@ -229,9 +230,25 @@ cp {baseDir}/references/sources.yaml wanderclaw/sources.yaml
 
 **执行**：严格遵循 `references/EXPLORER.md` 的六步流程。
 
-**推送**：评分 ≥ 7 时，把明信片 .md 文件的**完整内容**作为消息直接回复给用户（不是说"我写了一张明信片"，而是把全文发出来）。评分 5-7 只归档不推送。每日上限 5 条。
+**推送**：评分 ≥ 7 时，把明信片 .md 文件的**完整内容**作为消息直接回复给用户。评分 5-7 只归档不推送。每日上限 5 条。
 
-### 3. 回顾模式
+### 3. 深潜模式
+
+**触发（双通道）**：
+- **用户主动**：用户说"深潜"/"深度探索"/"找点深的"，或点击相关交互
+- **随机触发**：普通探索时有 10% 概率自动进入深潜模式（需要 cold_start_progress ≥ 3）
+
+**与普通探索的区别**：
+- **搜索源**：只用 `references/sources.yaml` 中的 `deep_dive` 专用源（arXiv、Quanta、Nautilus、Wait But Why 等长文平台）
+- **评分门槛**：≥ 8 分才推送（普通探索是 ≥ 7）
+- **字数要求**：450-600 字（普通探索是 300-450 字）
+- **产出倾向**：更偏向硬核知识、论文解读、深度分析
+
+**执行**：读取 `wanderclaw/state.json`，设置 `exploration_mode: "deep_dive"`，然后按 EXPLORER.md 执行（但使用 deep_dive 专用源和更高的评分门槛）。
+
+**推送**：评分 ≥ 8 时推送，否则归档。
+
+### 4. 回顾模式
 
 用户说"看看明信片"/"我的档案" → 列出明信片索引。
 
