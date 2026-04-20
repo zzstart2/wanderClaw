@@ -1,2 +1,5 @@
 team/
 .gitignore
+.claude/
+.git/
+docs/
