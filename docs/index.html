@@ -91,30 +91,60 @@
   /* Nav */
   .nav {
     position: fixed; bottom: 0; left: 0; right: 0;
-    background: rgba(15, 20, 25, 0.92);
-    backdrop-filter: blur(10px);
+    background: rgba(15, 20, 25, 0.96);
+    backdrop-filter: blur(12px);
     border-top: 1px solid var(--line);
-    padding: 16px 24px;
+    padding: 20px 28px;
     display: flex; align-items: center; justify-content: space-between;
     z-index: 50;
+    box-shadow: 0 -4px 24px rgba(0,0,0,.3);
   }
   .nav-btn {
     background: var(--card); border: 1px solid var(--line);
-    color: var(--text); padding: 10px 22px; border-radius: 8px;
-    cursor: pointer; font-size: 14px; font-weight: 500;
+    color: var(--text); padding: 12px 26px; border-radius: 10px;
+    cursor: pointer; font-size: 15px; font-weight: 500;
     transition: all .2s;
   }
   .nav-btn:hover:not(:disabled) {
-    background: var(--accent); border-color: var(--accent);
+    background: #2e3844; border-color: var(--muted);
   }
-  .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .dots { display: flex; gap: 8px; }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Primary (next) button — much more prominent */
+  .nav-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 14px 32px;
+    box-shadow: 0 4px 16px rgba(255,122,89,.3);
+  }
+  .nav-btn.primary:hover:not(:disabled) {
+    background: #ff8f70;
+    border-color: #ff8f70;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(255,122,89,.5);
+  }
+  /* Pulse when ready to advance */
+  @keyframes nav-pulse {
+    0%, 100% { box-shadow: 0 4px 16px rgba(255,122,89,.3); }
+    50%      { box-shadow: 0 4px 24px rgba(255,122,89,.75), 0 0 0 6px rgba(255,122,89,.18); }
+  }
+  .nav-btn.primary.ready {
+    animation: nav-pulse 1.5s ease-in-out infinite;
+  }
+
+  .dots { display: flex; gap: 10px; }
   .dot {
-    width: 8px; height: 8px; border-radius: 50%;
+    width: 9px; height: 9px; border-radius: 50%;
     background: var(--line); cursor: pointer; transition: all .2s;
   }
-  .dot.active { background: var(--accent); transform: scale(1.4); }
-  .page-indicator { color: var(--muted); font-size: 13px; }
+  .dot.active { background: var(--accent); transform: scale(1.5); }
+  .page-indicator { color: var(--text); font-size: 14px; font-weight: 500; }
+
+  /* Hide old per-slide run buttons — auto-triggered now */
+  .run-btn { display: none !important; }
 
   /* Terminal */
   .terminal {
@@ -834,7 +864,7 @@
     <span class="page-indicator" id="page-indicator">1 / 9</span>
     <div class="dots" id="dots"></div>
   </div>
-  <button class="nav-btn" id="next-btn">下一步 →</button>
+  <button class="nav-btn primary" id="next-btn">下一步 →</button>
 </div>
 
 <script>
@@ -856,7 +886,14 @@
     dotsEl.appendChild(d);
   }
 
-  function goTo(n) {
+  // Track which auto-animation is currently running, so slide changes abort it.
+  let animToken = 0;
+  function setNavReady(ready) {
+    if (ready && current !== TOTAL) nextBtn.classList.add('ready');
+    else nextBtn.classList.remove('ready');
+  }
+
+  async function goTo(n) {
     if (n < 1 || n > TOTAL) return;
     slides.forEach(s => s.classList.remove('active'));
     document.querySelector(`.slide[data-slide="${n}"]`).classList.add('active');
@@ -868,8 +905,20 @@
     progress.style.width = (n / TOTAL * 100) + '%';
     prevBtn.disabled = n === 1;
     nextBtn.disabled = n === TOTAL;
-    // Scroll to top of the slide
     document.querySelector(`.slide[data-slide="${n}"]`).scrollTop = 0;
+
+    // Switch animation token: any ongoing animation will see its token expire and stop.
+    const myToken = ++animToken;
+    setNavReady(false);
+
+    // Run the slide's auto-animation, if any. When it completes, pulse "下一步".
+    const runner = autoAnimations[n];
+    if (runner) {
+      try {
+        await runner(() => myToken === animToken);
+      } catch (e) { /* aborted */ }
+    }
+    if (myToken === animToken) setNavReady(true);
   }
   progress.style.width = (1 / TOTAL * 100) + '%';
   prevBtn.disabled = true;
@@ -881,9 +930,15 @@
     if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
   });
 
+  // ==========================================================
+  // autoAnimations[n] — async (alive) => void
+  //   Runs when slide n becomes active. alive() returns false when
+  //   user navigated away; animation should abort politely.
+  // ==========================================================
+  const autoAnimations = {};
+
   // ---------- Install terminal animation ----------
   const termInstall = document.getElementById('term-install');
-  const runInstallBtn = document.getElementById('run-install');
 
   async function typeLine(parent, text, cls = '', delay = 20) {
     const line = document.createElement('div');
@@ -902,8 +957,7 @@
     }
   }
 
-  runInstallBtn.addEventListener('click', async () => {
-    runInstallBtn.disabled = true;
+  autoAnimations[2] = async (alive) => {
     termInstall.innerHTML = '';
     const promptLine = document.createElement('div');
     promptLine.className = 'term-line';
@@ -913,6 +967,7 @@
     promptLine.appendChild(cmdSpan);
     termInstall.appendChild(promptLine);
     await typeChar(cmdSpan, 'clawhub install wanderclaw', 50);
+    if (!alive()) return;
     await new Promise(r => setTimeout(r, 400));
 
     const steps = [
@@ -934,18 +989,19 @@
       ['term-warn', '💡 Next step: open Claude Code and say "虾游"'],
     ];
     for (const [cls, text] of steps) {
+      if (!alive()) return;
       await typeLine(termInstall, text, cls, 150);
     }
+    if (!alive()) return;
     const finalPrompt = document.createElement('div');
     finalPrompt.className = 'term-line';
     finalPrompt.innerHTML = `<span class="term-prompt">azhe@mac</span> <span class="term-out">~/workspace</span> $ <span class="cursor"></span>`;
     termInstall.appendChild(finalPrompt);
     termInstall.scrollTop = termInstall.scrollHeight;
-  });
+  };
 
   // ---------- Chat animation ----------
   const chat1 = document.getElementById('chat-1');
-  const runWakeup = document.getElementById('run-wakeup');
 
   function addMsg(container, role, text) {
     const msg = document.createElement('div');
@@ -962,7 +1018,7 @@
     container.scrollTop = container.scrollHeight;
   }
 
-  async function typeMsg(container, role, text, speed = 25) {
+  async function typeMsg(container, role, text, speed = 25, alive = () => true) {
     const msg = document.createElement('div');
     msg.className = `msg ${role}`;
     const avatar = document.createElement('div');
@@ -975,24 +1031,27 @@
     container.appendChild(msg);
     const tokens = text.split('');
     for (const t of tokens) {
+      if (!alive()) return;
       bubble.innerHTML += t;
       container.scrollTop = container.scrollHeight;
       await new Promise(r => setTimeout(r, speed));
     }
   }
 
-  runWakeup.addEventListener('click', async () => {
-    runWakeup.disabled = true;
+  autoAnimations[3] = async (alive) => {
     chat1.innerHTML = '';
     await typeMsg(chat1, 'user', '虾游', 80);
+    if (!alive()) return;
     await new Promise(r => setTimeout(r, 500));
+    if (!alive()) return;
     await typeMsg(chat1, 'agent',
       '🦐 哦？有人叫我？<br/><br/>' +
       '我是虾游，很高兴认识你。我会替你在互联网上逛逛，把有意思的东西写成明信片寄给你。<br/><br/>' +
       '开始之前，我需要知道你对什么感兴趣 —— 随便聊聊就行，不用很正式。比如：技术方向？科学领域？小众爱好？先给我 2-5 个方向就够了，后面我会慢慢读你的聊天记录，自己学。',
-      20
+      20,
+      alive
     );
-  });
+  };
 
   // ---------- Interest picker ----------
   const interestGrid = document.getElementById('interest-grid');
@@ -1026,10 +1085,8 @@
 
   // ---------- Cold start terminal ----------
   const termCold = document.getElementById('term-coldstart');
-  const runCold = document.getElementById('run-coldstart');
 
-  runCold.addEventListener('click', async () => {
-    runCold.disabled = true;
+  autoAnimations[5] = async (alive) => {
     termCold.innerHTML = '';
     const steps = [
       ['term-info', '🦐 虾游启动冷启动三连...'],
@@ -1056,9 +1113,13 @@
       ['term-ok', '✓ 冷启动完成 · daily cron 已注册'],
     ];
     for (const [cls, text] of steps) {
+      if (!alive()) return;
       await typeLine(termCold, text, cls, 180);
     }
-  });
+  };
+
+  // ---------- Initial pulse (slide 1 has no animation) ----------
+  setNavReady(true);
 </script>
 </body>
 </html>
