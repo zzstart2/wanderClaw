@@ -1,638 +1,1064 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<title>虾游 — 明信片与人物卡 20 张样本</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>虾游 WanderClaw · 安装使用演示</title>
 <style>
-@page { size: A4; margin: 15mm 13mm; }
-* { box-sizing: border-box; }
-html, body {
-  font-family: "PingFang SC","Songti SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
-  font-size: 10pt; line-height: 1.6; color: #1a1a1a; margin:0; padding:0;
-  background: #fafaf7;
-}
-.wrap { max-width: 780px; margin: 0 auto; padding: 4mm; }
+  :root {
+    --bg: #0f1419;
+    --bg-soft: #1a2028;
+    --card: #222a35;
+    --line: #2e3844;
+    --text: #e6edf3;
+    --muted: #8b98a5;
+    --accent: #ff7a59;
+    --accent-soft: #ffb199;
+    --ok: #7ee787;
+    --blue: #79c0ff;
+    --yellow: #ffd966;
+    --shadow: 0 20px 60px rgba(0,0,0,.4);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: radial-gradient(ellipse at top, #1a2028 0%, #0f1419 60%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+      "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  .app {
+    width: 100vw; height: 100vh;
+    display: flex; flex-direction: column;
+  }
+  /* Top progress */
+  .progress-wrap {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 3px; background: #1a2028; z-index: 100;
+  }
+  .progress {
+    height: 100%; width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+    transition: width .5s ease;
+  }
+  /* Slide */
+  .slide {
+    flex: 1;
+    display: none;
+    padding: 64px 80px 120px;
+    overflow-y: auto;
+    animation: fadeIn .5s ease;
+  }
+  .slide.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .slide-inner {
+    max-width: 1100px; margin: 0 auto;
+  }
+  .kicker {
+    color: var(--accent);
+    font-size: 13px; letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 12px; font-weight: 600;
+  }
+  h1 {
+    font-size: 42px; font-weight: 700; margin: 0 0 20px;
+    line-height: 1.2;
+  }
+  h2 {
+    font-size: 28px; font-weight: 600; margin: 36px 0 14px;
+  }
+  p, li { line-height: 1.75; font-size: 16px; color: #cdd7e1; }
+  .lead {
+    font-size: 18px; color: var(--muted); margin-bottom: 28px;
+    max-width: 720px;
+  }
+  .note {
+    background: rgba(255, 122, 89, 0.08);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px; border-radius: 6px; margin: 20px 0;
+    color: #f0d6c9; font-size: 14px;
+  }
+  code.inline {
+    background: #2a323e; color: var(--yellow);
+    padding: 2px 7px; border-radius: 4px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 14px;
+  }
+  /* Nav */
+  .nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(15, 20, 25, 0.92);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 50;
+  }
+  .nav-btn {
+    background: var(--card); border: 1px solid var(--line);
+    color: var(--text); padding: 10px 22px; border-radius: 8px;
+    cursor: pointer; font-size: 14px; font-weight: 500;
+    transition: all .2s;
+  }
+  .nav-btn:hover:not(:disabled) {
+    background: var(--accent); border-color: var(--accent);
+  }
+  .nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .dots { display: flex; gap: 8px; }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--line); cursor: pointer; transition: all .2s;
+  }
+  .dot.active { background: var(--accent); transform: scale(1.4); }
+  .page-indicator { color: var(--muted); font-size: 13px; }
 
-.cover { text-align:center; padding: 14mm 0 10mm; }
-.cover h1 {
-  font-size: 20pt; color:#0b2a4a; margin:0 0 0.3em;
-  letter-spacing: 0.03em;
-}
-.cover .sub { font-size: 10pt; color:#777; margin-bottom: 0.4em; }
-.cover .note { font-size:9pt; color:#999; max-width:520px; margin:0 auto; }
+  /* Terminal */
+  .terminal {
+    background: #0a0e13; border-radius: 10px;
+    border: 1px solid var(--line);
+    overflow: hidden; box-shadow: var(--shadow);
+    margin: 20px 0;
+  }
+  .terminal-bar {
+    background: #1a2028; padding: 10px 16px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .td-r { background: #ff5f56; }
+  .td-y { background: #ffbd2e; }
+  .td-g { background: #27c93f; }
+  .terminal-title {
+    margin-left: 12px; color: var(--muted);
+    font-size: 12px; font-family: "SF Mono", monospace;
+  }
+  .terminal-body {
+    padding: 20px 24px; min-height: 220px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 14px; line-height: 1.7;
+    color: #d4dbe3;
+  }
+  .term-line { white-space: pre-wrap; }
+  .term-prompt { color: var(--ok); }
+  .term-cmd { color: var(--text); }
+  .term-out { color: #a0acba; }
+  .term-ok { color: var(--ok); }
+  .term-warn { color: var(--yellow); }
+  .term-info { color: var(--blue); }
+  .cursor {
+    display: inline-block; width: 8px; height: 15px;
+    background: var(--accent); vertical-align: middle;
+    animation: blink 1s infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
 
-.section {
-  page-break-inside: avoid;
-  margin-bottom: 12mm;
-}
+  /* Chat */
+  .chat-window {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; box-shadow: var(--shadow);
+    overflow: hidden; margin: 20px 0;
+  }
+  .chat-head {
+    padding: 14px 20px; border-bottom: 1px solid var(--line);
+    font-size: 13px; color: var(--muted);
+    background: var(--bg-soft);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .chat-body { padding: 20px 24px; min-height: 280px; max-height: 500px; overflow-y: auto; }
+  .msg { margin-bottom: 14px; display: flex; gap: 10px; animation: fadeIn .4s ease; }
+  .msg.user { justify-content: flex-end; }
+  .msg-bubble {
+    max-width: 75%; padding: 12px 16px; border-radius: 12px;
+    font-size: 14px; line-height: 1.6;
+  }
+  .msg.user .msg-bubble {
+    background: var(--accent); color: #1a1008;
+    border-bottom-right-radius: 3px;
+  }
+  .msg.agent .msg-bubble {
+    background: #2c3642; color: var(--text);
+    border-bottom-left-radius: 3px;
+  }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+    background: linear-gradient(135deg, #ff7a59, #ff4e50);
+  }
+  .msg.user .avatar {
+    background: linear-gradient(135deg, #5b9df0, #3a7bd5); order: 2;
+  }
 
-.postcard {
-  background: #fffef8;
-  border: 1px solid #d5d0c3;
-  border-left: 4px solid #c97b4a;
-  border-radius: 4px;
-  padding: 14px 18px 12px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  margin-bottom: 8px;
-}
-.postcard.deep { border-left-color: #6b5bb8; background: #fbf9ff; }
+  /* Postcard */
+  .postcard-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 20px; margin-top: 20px;
+  }
+  .postcard {
+    background: linear-gradient(135deg, #fef7e8 0%, #fdeac1 100%);
+    color: #3d2f1f;
+    border-radius: 12px;
+    padding: 22px 22px 18px;
+    position: relative;
+    box-shadow: 0 12px 35px rgba(0,0,0,.35);
+    transform: rotate(-1.5deg);
+    transition: transform .35s ease, box-shadow .35s ease;
+    cursor: pointer;
+    min-height: 280px;
+    display: flex; flex-direction: column;
+  }
+  .postcard:nth-child(2) { transform: rotate(1deg); }
+  .postcard:nth-child(3) { transform: rotate(-0.5deg); }
+  .postcard:hover {
+    transform: rotate(0deg) scale(1.03);
+    box-shadow: 0 20px 50px rgba(0,0,0,.5);
+  }
+  .postcard-stamp {
+    position: absolute; top: 14px; right: 14px;
+    background: var(--accent); color: white;
+    padding: 3px 10px; border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+    transform: rotate(8deg);
+  }
+  .postcard-id {
+    font-size: 11px; color: #8b6f4f; letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .postcard-title {
+    font-size: 17px; font-weight: 700;
+    margin: 0 0 12px; line-height: 1.35;
+    color: #2b1d0c;
+  }
+  .postcard-body-text {
+    font-size: 13px; line-height: 1.65; color: #4a3a26;
+    flex: 1;
+  }
+  .postcard-foot {
+    margin-top: 12px; padding-top: 10px;
+    border-top: 1px dashed #b89a6f;
+    font-size: 11px; color: #8b6f4f;
+    display: flex; justify-content: space-between;
+  }
 
-.postcard-header {
-  display:flex; justify-content:space-between; align-items:baseline;
-  border-bottom: 1px dashed #c9c3b0;
-  padding-bottom: 0.35em; margin-bottom: 0.7em;
-  font-size: 9pt;
-}
-.postcard-id { font-weight:600; color:#c97b4a; font-size:11pt; }
-.postcard.deep .postcard-id { color:#6b5bb8; }
-.postcard-meta { color:#8a7860; }
-.postcard-meta span { margin-left: 0.7em; }
+  /* Interest picker */
+  .interest-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin: 20px 0;
+  }
+  .interest-tag {
+    background: var(--card); border: 1px solid var(--line);
+    padding: 14px 16px; border-radius: 10px;
+    cursor: pointer; transition: all .2s;
+    text-align: center; font-size: 14px;
+    user-select: none;
+  }
+  .interest-tag:hover {
+    border-color: var(--accent-soft);
+    transform: translateY(-2px);
+  }
+  .interest-tag.selected {
+    background: rgba(255, 122, 89, 0.18);
+    border-color: var(--accent);
+    color: var(--accent-soft);
+    box-shadow: 0 0 0 2px rgba(255,122,89,.15);
+  }
+  .interest-tag .check {
+    display: inline-block; margin-left: 6px;
+    opacity: 0; transition: opacity .2s;
+  }
+  .interest-tag.selected .check { opacity: 1; }
 
-.postcard-hook {
-  font-size: 11.5pt; font-weight:600; color:#0b2a4a;
-  margin: 0.2em 0 0.6em; line-height: 1.4;
-}
-.postcard p {
-  margin: 0.35em 0;
-  text-align: justify;
-  font-size: 9.8pt;
-  color:#2a2a2a;
-}
-.postcard strong { color:#0b2a4a; }
-.postcard em { color:#6b5bb8; }
-.postcard .link {
-  margin-top: 0.6em; padding-top: 0.5em;
-  border-top: 1px dashed #c9c3b0;
-  font-size: 8.8pt; color: #556; word-break: break-all;
-}
-.postcard .link::before { content: "🔗  "; }
+  /* Trigger grid */
+  .trigger-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 14px; margin-top: 20px;
+  }
+  .trigger-card {
+    background: var(--card); border: 1px solid var(--line);
+    padding: 16px 18px; border-radius: 10px;
+    transition: all .2s;
+  }
+  .trigger-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .trigger-label {
+    font-size: 12px; color: var(--muted); margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  .trigger-words { display: flex; flex-wrap: wrap; gap: 6px; }
+  .trigger-word {
+    background: rgba(255, 217, 102, 0.14);
+    color: var(--yellow);
+    padding: 3px 10px; border-radius: 4px;
+    font-size: 13px;
+    font-family: "SF Mono", monospace;
+  }
 
-.chcard {
-  background: #f4eee3;
-  border: 1px solid #d5c9a9;
-  border-radius: 4px;
-  padding: 10px 14px;
-}
-.chcard-header {
-  display:flex; align-items:center; gap:0.4em;
-  border-bottom: 1px solid #d5c9a9;
-  padding-bottom: 0.3em; margin-bottom: 0.4em;
-}
-.chcard-emoji { font-size: 11pt; }
-.chcard-name { font-size: 10.5pt; font-weight:600; color:#5a3e1f; }
-.chcard-role { margin-left:auto; font-size:8.5pt; color:#8b6a45; font-style:italic; }
-.chcard p { margin: 0.25em 0; font-size: 9.3pt; color:#3a2f22; line-height: 1.55; }
+  /* Timeline */
+  .timeline {
+    position: relative; margin: 30px 0; padding-left: 30px;
+    border-left: 2px dashed var(--line);
+  }
+  .tl-item {
+    position: relative; padding: 14px 0 14px 16px; margin-bottom: 6px;
+  }
+  .tl-item::before {
+    content: ''; position: absolute; left: -38px; top: 20px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 3px solid var(--bg);
+  }
+  .tl-time {
+    color: var(--accent); font-weight: 600; font-size: 14px;
+    font-family: "SF Mono", monospace;
+  }
+  .tl-desc { color: #cdd7e1; margin-top: 4px; font-size: 14px; }
+
+  /* Hero */
+  .hero {
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; padding: 40px 0;
+  }
+  .shrimp {
+    font-size: 120px;
+    animation: float 3s ease-in-out infinite;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 10px 20px rgba(255, 122, 89, 0.3));
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-15px) rotate(5deg); }
+  }
+  .hero h1 { font-size: 56px; margin-bottom: 10px; }
+  .tagline {
+    font-size: 22px; color: var(--accent-soft);
+    margin-bottom: 30px; font-weight: 300;
+  }
+  .hero-stats {
+    display: flex; gap: 40px; margin-top: 30px;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .stat {
+    background: var(--card); padding: 16px 28px;
+    border-radius: 10px; border: 1px solid var(--line);
+  }
+  .stat-val {
+    font-size: 26px; color: var(--accent); font-weight: 700;
+  }
+  .stat-label {
+    font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  /* Clickable hint */
+  .hint {
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--accent); font-size: 13px;
+    padding: 6px 12px; border: 1px dashed var(--accent);
+    border-radius: 20px; cursor: pointer;
+    animation: pulse 2s ease-in-out infinite;
+    user-select: none;
+  }
+  @keyframes pulse {
+    50% { opacity: 0.6; }
+  }
+  .hint:hover { background: rgba(255, 122, 89, 0.1); }
+
+  /* Run button */
+  .run-btn {
+    background: var(--accent); color: #1a1008;
+    border: none; padding: 12px 26px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all .2s;
+    margin-top: 10px;
+  }
+  .run-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,122,89,.4); }
+  .run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Two-column */
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 30px; margin-top: 20px;
+  }
+
+  /* Requirements list */
+  .req-list { list-style: none; padding: 0; }
+  .req-list li {
+    padding: 12px 16px; margin-bottom: 8px;
+    background: var(--card); border-radius: 8px;
+    border-left: 3px solid var(--ok);
+    font-size: 14px;
+  }
+  .req-list li strong { color: var(--text); }
+  .req-list li span { color: var(--muted); margin-left: 6px; }
+
+  @media (max-width: 900px) {
+    .slide { padding: 40px 24px 120px; }
+    .postcard-grid, .two-col, .trigger-grid, .interest-grid {
+      grid-template-columns: 1fr;
+    }
+    .hero h1 { font-size: 36px; }
+    .shrimp { font-size: 80px; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="cover">
-    <h1>🦐 虾游 · 明信片与人物卡样本册</h1>
-    <div class="sub">WanderClaw Sample Archive — 20 postcards, 20 character cards</div>
-    <div class="note">示例内容基于真实研究方向与真实作者构造，用于展示明信片格式与跨信引用结构（#NNN 格式）。深潜明信片以紫色边条区分。</div>
-  </div>
-  
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #001</span>
-      <span class="postcard-meta">
-        <span>方向：AI Agent</span>
-        <span>评分：8.5 / 10</span>
-        <span>类型：普通</span>
-      </span>
+<div class="progress-wrap"><div class="progress" id="progress"></div></div>
+
+<div class="app">
+  <!-- Slide 1: Hero -->
+  <section class="slide active" data-slide="1">
+    <div class="slide-inner">
+      <div class="hero">
+        <div class="shrimp">🦐</div>
+        <h1>虾游 <span style="color: var(--muted); font-weight: 300;">WanderClaw</span></h1>
+        <div class="tagline">替你逛互联网，把好东西寄回来。</div>
+        <p class="lead">
+          一只有好奇心的 AI 龙虾，INTP 人格，每天自主在互联网深处探险，
+          把发现的知识宝藏写成「明信片」寄给你。<br/>
+          <strong>OpenClaw Skill</strong> —— 安装即用，零代码，零配置。
+        </p>
+        <div class="hero-stats">
+          <div class="stat"><div class="stat-val">1</div><div class="stat-label">行命令安装</div></div>
+          <div class="stat"><div class="stat-val">4/天</div><div class="stat-label">自动探索</div></div>
+          <div class="stat"><div class="stat-val">3 层</div><div class="stat-label">水域深度</div></div>
+        </div>
+        <div style="margin-top:40px; color: var(--muted); font-size: 13px;">
+          ↓ 下一步开始演示安装过程
+        </div>
+      </div>
     </div>
-    <div class="postcard-hook">Agent 终于有了自己的协议栈。</div>
-    <p>2025 年下半年到 2026 年初，AI 这片水域悄悄长出两层基础设施：MCP（Anthropic 2024 年 11 月发布）管 Agent 到工具的连接，A2A（Google 2025 年 4 月移交 Linux Foundation）管 Agent 到 Agent 的协作。到 2026 年 3 月 MCP 安装量过了 9700 万，每家主流厂商都在兼容。</p>
-<p>有意思的地方在于：大家终于不再把「多 Agent 系统」做成「一个 prompt 里塞一堆私有工具」的黑盒——两层协议独立演进，demo 不再漂亮，规模化反而顺了。</p>
-<p>如果 TCP/IP 当年统一了机器间通信，MCP+A2A 可能就是 Agent 间通信被统一的那一刻。</p>
-    <div class="link">https://dev.to/chunxiaoxx/a2a-and-mcp-in-2026-different-layers-one-agent-stack</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Anthropic × Google Open Source</span>
-      <span class="chcard-role">本张明信片人物卡</span>
+  </section>
+
+  <!-- Slide 2: Install -->
+  <section class="slide" data-slide="2">
+    <div class="slide-inner">
+      <div class="kicker">STEP 1 · 安装</div>
+      <h1>一行命令，装上虾游</h1>
+      <p class="lead">
+        通过 OpenClaw 的 skill 市场 <code class="inline">clawhub</code> 安装，整个过程不到 10 秒。
+        不用写代码、不用配 API key，skill 是纯 markdown + 脚本组成。
+      </p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="terminal-dot td-r"></span>
+          <span class="terminal-dot td-y"></span>
+          <span class="terminal-dot td-g"></span>
+          <span class="terminal-title">~/workspace — zsh</span>
+        </div>
+        <div class="terminal-body" id="term-install">
+          <div class="term-line"><span class="term-prompt">azhe@mac</span> <span class="term-out">~/workspace</span> $ <span class="cursor"></span></div>
+        </div>
+      </div>
+
+      <button class="run-btn" id="run-install">▶ 运行安装命令</button>
+
+      <div class="note">
+        <strong>💡 发生了什么：</strong>
+        clawhub 把 <code class="inline">wanderClaw</code> 仓库拉到 <code class="inline">~/.claude/skills/wanderclaw/</code>，
+        Claude Code 下次启动时就能自动发现这个 skill。核心文件是 <code class="inline">SKILL.md</code>，
+        里面是虾游的触发规则和行为描述。
+      </div>
     </div>
-    <p>两家在 Agent 基础设施上从竞争走向互补：Anthropic 用 MCP 定义「工具语言」，Google 把 A2A 捐给 Linux Foundation 定义「Agent 语言」。一条双主线，让 2026 年的 Agent 生态第一次有了像样的协议根基。</p>
-  </div>
+  </section>
+
+  <!-- Slide 3: First activation -->
+  <section class="slide" data-slide="3">
+    <div class="slide-inner">
+      <div class="kicker">STEP 2 · 首次激活</div>
+      <h1>跟主 Agent 说一句「虾游」</h1>
+      <p class="lead">
+        虾游是 <strong>按关键词激活</strong> 的角色 —— 平时它在睡觉，你不找它它不冒头，
+        不会抢主 agent 的身份。首次使用时，说一声就能唤醒它。
+      </p>
+
+      <div class="chat-window">
+        <div class="chat-head">
+          <span style="color: var(--ok);">●</span> Claude Code · 对话中
+        </div>
+        <div class="chat-body" id="chat-1">
+          <!-- Dynamic -->
+        </div>
+      </div>
+
+      <button class="run-btn" id="run-wakeup">▶ 发送消息「虾游」</button>
+
+      <div class="note">
+        <strong>💡 工作原理：</strong>
+        触发词命中 <code class="inline">SKILL.md</code> 的激活规则，主 agent 会把对话控制权「借」给虾游。
+        虾游以第一人称回复，但本质上还是同一个 Claude 模型，只是人格/行为切换了。
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 4: Onboarding -->
+  <section class="slide" data-slide="4">
+    <div class="slide-inner">
+      <div class="kicker">STEP 3 · Onboarding</div>
+      <h1>挑 2–5 个感兴趣的方向</h1>
+      <p class="lead">
+        虾游会问你对什么感兴趣。这些方向会写进
+        <code class="inline">interest-graph.json</code>，成为探索的起点 —
+        聊天中提到的新兴趣会持续被捕获，图谱会动态生长。
+      </p>
+
+      <div style="color: var(--muted); margin-bottom: 12px; font-size: 14px;">
+        👇 试着点选几个方向（建议 2–5 个）
+      </div>
+
+      <div class="interest-grid" id="interest-grid">
+        <div class="interest-tag" data-tag="具身智能">具身智能<span class="check">✓</span></div>
+        <div class="interest-tag" data-tag="AI Agent">AI Agent<span class="check">✓</span></div>
+        <div class="interest-tag" data-tag="产品设计">产品设计<span class="check">✓</span></div>
+        <div class="interest-tag" data-tag="分布式系统">分布式系统<span class="check">✓</span></div>
+        <div class="interest-tag" data-tag="哲学">哲学<span class="check">✓</span></div>
+        <div class="interest-tag" data-tag="天体物理">天体物理<span class="check">✓</span></div>
+        <div class="interest-tag" data-tag="独立游戏">独立游戏<span class="check">✓</span></div>
+        <div class="interest-tag" data-tag="生物进化">生物进化<span class="check">✓</span></div>
+        <div class="interest-tag" data-tag="极简生活">极简生活<span class="check">✓</span></div>
+      </div>
+
+      <div id="interest-feedback" style="margin-top: 18px; color: var(--ok); font-size: 14px; min-height: 22px;"></div>
+
+      <div class="note">
+        <strong>💡 为什么先问：</strong>
+        冷启动需要一个方向，否则虾游不知道往哪游。后续它会读你的聊天历史，
+        自动发现你新提到的兴趣点，无需手动维护。
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 5: Cold start cron -->
+  <section class="slide" data-slide="5">
+    <div class="slide-inner">
+      <div class="kicker">STEP 4 · 自动注册 + 冷启动</div>
+      <h1>注册每日 cron，立刻跑一次三连探索</h1>
+      <p class="lead">
+        Onboarding 结束后，虾游会做两件事：注册 4 个时间点的自动探索，
+        以及当场跑一次冷启动，给你 3 张开门红明信片。
+      </p>
+
+      <div class="two-col">
+        <div>
+          <h2 style="font-size: 18px;">🕐 注册 Daily Cron</h2>
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-time">09:00</div>
+              <div class="tl-desc">晨间探索 · 开启新一天</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-time">12:00</div>
+              <div class="tl-desc">午间探索 · 吃饭时的读物</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-time">15:00</div>
+              <div class="tl-desc">下午探索 · 走神时间</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-time">20:00</div>
+              <div class="tl-desc">晚间探索 · 睡前灵感</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-time">周六 22:00</div>
+              <div class="tl-desc">🌊 深潜 · 硬核深度内容</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-time">周日 10:00</div>
+              <div class="tl-desc">📮 周报 · 一周精选汇总</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 style="font-size: 18px;">⚡ 冷启动三连</h2>
+          <div class="terminal">
+            <div class="terminal-bar">
+              <span class="terminal-dot td-r"></span>
+              <span class="terminal-dot td-y"></span>
+              <span class="terminal-dot td-g"></span>
+              <span class="terminal-title">wanderclaw explore</span>
+            </div>
+            <div class="terminal-body" id="term-coldstart" style="min-height: 320px; font-size: 13px;">
+              <div class="term-line term-out">Waiting to start...<span class="cursor"></span></div>
+            </div>
+          </div>
+          <button class="run-btn" id="run-coldstart" style="margin-top: 10px;">▶ 启动冷启动探索</button>
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>💡 为什么冷启动：</strong>
+        新装的 skill 如果没产出立刻让你看到，很容易被遗忘。三张开门红明信片
+        = 让你第一次就感受到「它真的能给我带来东西」。
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 6: Postcards -->
+  <section class="slide" data-slide="6">
+    <div class="slide-inner">
+      <div class="kicker">STEP 5 · 收到明信片</div>
+      <h1>3 张开门红明信片送达</h1>
+      <p class="lead">
+        每张明信片 = 一个知识切片。虾游在「水域」中探索后，把最有趣的发现写成
+        120–200 字的短文，配上来源链接和标签。悬停卡片查看细节。
+      </p>
+
+      <div class="postcard-grid">
+        <div class="postcard">
+          <div class="postcard-stamp">NEW</div>
+          <div class="postcard-id">POSTCARD #001</div>
+          <h3 class="postcard-title">当机械手学会「犹豫」：具身智能的触觉反馈新范式</h3>
+          <p class="postcard-body-text">
+            MIT 新论文提出给机械手加一层「迟疑机制」—— 不是让它更快，而是让它在
+            抓取前多 200ms 去感知物体纹理。这个反直觉的设计让脆物抓取成功率从 47% 提到 89%。
+            核心洞见：过度追求反应速度，反而让触觉成了噪声。
+          </p>
+          <div class="postcard-foot">
+            <span>🏷 具身智能 · 触觉</span>
+            <span>📍 近岸</span>
+          </div>
+        </div>
+
+        <div class="postcard">
+          <div class="postcard-stamp">NEW</div>
+          <div class="postcard-id">POSTCARD #002</div>
+          <h3 class="postcard-title">Agent 协议战争：MCP vs A2A vs ACP 到底在吵什么？</h3>
+          <p class="postcard-body-text">
+            三个 Agent 通信协议各自代表不同哲学：MCP 把工具当 REST API，
+            A2A 把 Agent 当对等节点，ACP 则想统一一切。实际生态会走向哪个？
+            看下一年谁能搞定跨厂商的「Agent 互通」才算真胜出。
+          </p>
+          <div class="postcard-foot">
+            <span>🏷 AI Agent · 协议</span>
+            <span>📍 中海</span>
+          </div>
+        </div>
+
+        <div class="postcard">
+          <div class="postcard-stamp">NEW</div>
+          <div class="postcard-id">POSTCARD #003</div>
+          <h3 class="postcard-title">为什么顶尖产品经理都在练「减法能力」</h3>
+          <p class="postcard-body-text">
+            Figma 的首席 PM 分享：「我每周花 1/3 时间在说 No。」产品设计的核心矛盾
+            不是想不到做什么，而是无法对已经立项的功能说停。减法不靠直觉，
+            靠的是一套可重复的「去功能化」提问法。
+          </p>
+          <div class="postcard-foot">
+            <span>🏷 产品设计</span>
+            <span>📍 近岸</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>💡 明信片格式：</strong>
+        每张明信片包含 <strong>编号 · 标题 · 120–200 字正文 · 标签 · 水域层级</strong>。
+        水域分三层：近岸（热门）、中海（小众）、深海（硬核）。虾游会混合来源，避免信息茧房。
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 7: Daily triggers -->
+  <section class="slide" data-slide="7">
+    <div class="slide-inner">
+      <div class="kicker">STEP 6 · 日常使用</div>
+      <h1>一句话就能召唤</h1>
+      <p class="lead">
+        以后你不用记复杂命令 —— 用自然语言说「想做的事」就行。
+        虾游的触发词覆盖了你能想到的大多数场景。
+      </p>
+
+      <div class="trigger-grid">
+        <div class="trigger-card">
+          <div class="trigger-label">立刻出去逛</div>
+          <div class="trigger-words">
+            <span class="trigger-word">虾游</span>
+            <span class="trigger-word">探索</span>
+            <span class="trigger-word">出发</span>
+            <span class="trigger-word">找点有趣的</span>
+          </div>
+        </div>
+        <div class="trigger-card">
+          <div class="trigger-label">看历史明信片</div>
+          <div class="trigger-words">
+            <span class="trigger-word">最近发了什么</span>
+            <span class="trigger-word">我的档案</span>
+            <span class="trigger-word">明信片历史</span>
+          </div>
+        </div>
+        <div class="trigger-card">
+          <div class="trigger-label">看单张明信片</div>
+          <div class="trigger-words">
+            <span class="trigger-word">详细看看 #001</span>
+          </div>
+        </div>
+        <div class="trigger-card">
+          <div class="trigger-label">硬核深度内容</div>
+          <div class="trigger-words">
+            <span class="trigger-word">深潜</span>
+            <span class="trigger-word">找点深的</span>
+            <span class="trigger-word">深度探索</span>
+          </div>
+        </div>
+        <div class="trigger-card">
+          <div class="trigger-label">收藏 / 屏蔽</div>
+          <div class="trigger-words">
+            <span class="trigger-word">收藏 #001</span>
+            <span class="trigger-word">屏蔽 NFT</span>
+            <span class="trigger-word">不想看 XX</span>
+          </div>
+        </div>
+        <div class="trigger-card">
+          <div class="trigger-label">随机 / 分享</div>
+          <div class="trigger-words">
+            <span class="trigger-word">随机</span>
+            <span class="trigger-word">随便看看</span>
+            <span class="trigger-word">分享 #001</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>💡 设计哲学：</strong>
+        触发词是「意图的同义词集合」。用户说什么都能命中，不用背命令。
+        SKILL.md 里用自然语言描述触发规则，Claude 靠语义理解来识别。
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 8: Auto running -->
+  <section class="slide" data-slide="8">
+    <div class="slide-inner">
+      <div class="kicker">STEP 7 · 自动运行</div>
+      <h1>它在后台替你「游」</h1>
+      <p class="lead">
+        装完之后就不用你管了。虾游每天按计划出门，聊天里捕获你的新兴趣，
+        把个性化的内容推到聊天窗。像养了只电子宠物，但这只宠物给你带知识。
+      </p>
+
+      <div class="two-col">
+        <div>
+          <h2 style="font-size: 18px;">🔁 自动循环</h2>
+          <ul style="padding-left: 20px;">
+            <li><strong>每天 4 次</strong>：9/12/15/20 点探索，好内容推到聊天窗</li>
+            <li><strong>每周六 22:00</strong>：深潜 —— 跑进深海去找硬核内容</li>
+            <li><strong>每周日 10:00</strong>：周报 —— 汇总一周精选 + 趋势观察</li>
+            <li><strong>持续学习</strong>：聊天里的新兴趣自动加入图谱</li>
+            <li><strong>多样性保护</strong>：混合来源，避免信息茧房</li>
+          </ul>
+        </div>
+        <div>
+          <h2 style="font-size: 18px;">📋 运行数据</h2>
+          <p style="color: var(--muted); font-size: 14px;">
+            安装后，workspace 会多一个 <code class="inline">wanderclaw/</code> 目录：
+          </p>
+          <div class="terminal" style="margin-top: 8px;">
+            <div class="terminal-bar">
+              <span class="terminal-dot td-r"></span>
+              <span class="terminal-dot td-y"></span>
+              <span class="terminal-dot td-g"></span>
+              <span class="terminal-title">workspace structure</span>
+            </div>
+            <div class="terminal-body" style="min-height: auto; font-size: 13px;">
+<span class="term-info">wanderclaw/</span>
+├── <span class="term-out">postcards/</span>        <span class="term-out"># 明信片归档</span>
+│   ├── 001.md
+│   ├── 002.md
+│   └── ...
+├── <span class="term-out">state.json</span>        <span class="term-out"># 运行状态</span>
+├── <span class="term-out">interest-graph.json</span>  <span class="term-out"># 兴趣图谱</span>
+├── <span class="term-out">explore-log.jsonl</span>    <span class="term-out"># 探索日志</span>
+└── <span class="term-out">favorites.json</span>       <span class="term-out"># 你的收藏</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2>🧭 系统要求</h2>
+      <ul class="req-list">
+        <li><strong>OpenClaw</strong> <span>运行中的 Claude Code / claude.ai code</span></li>
+        <li><strong>搜索工具</strong> <span>至少一种（Gemini web_search 免费 / Brave / ddg-search）</span></li>
+        <li><strong>推荐模型</strong> <span>Sonnet 4 或以上 · Opus 4.7 体验更佳</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Slide 9: Ending -->
+  <section class="slide" data-slide="9">
+    <div class="slide-inner">
+      <div class="hero">
+        <div class="shrimp" style="font-size: 140px;">🦐</div>
+        <h1>出发吧！</h1>
+        <div class="tagline">虾游已经上路，明信片会陆续寄到。</div>
+        <p class="lead" style="text-align: center; max-width: 640px; margin: 0 auto 30px;">
+          你不需要记住它什么时候出发，也不需要维护兴趣列表。<br/>
+          <strong>就当养了只电子宠物 —— 只是它给你带知识，不用你喂。</strong>
+        </p>
+
+        <div class="terminal" style="max-width: 560px; margin: 20px auto;">
+          <div class="terminal-bar">
+            <span class="terminal-dot td-r"></span>
+            <span class="terminal-dot td-y"></span>
+            <span class="terminal-dot td-g"></span>
+            <span class="terminal-title">get started</span>
+          </div>
+          <div class="terminal-body" style="text-align: left;">
+            <div class="term-line"><span class="term-prompt">$</span> <span class="term-cmd">clawhub install wanderclaw</span></div>
+            <div class="term-line term-out" style="margin-top: 8px;"># 然后随时对 Claude 说一声：</div>
+            <div class="term-line"><span class="term-warn">  "虾游"</span></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 32px;">
+          <a href="samples.html" style="display:inline-block;padding:10px 20px;border:1px solid var(--accent);border-radius:6px;color:var(--accent);text-decoration:none;font-size:14px;">📮 看 20 张明信片样本 →</a>
+        </div>
+
+        <div style="margin-top: 40px; color: var(--muted); font-size: 13px;">
+          Made with 🦐 by 阿哲 · Apache 2.0 · OpenClaw Skill
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
-
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #002</span>
-      <span class="postcard-meta">
-        <span>方向：AI Agent</span>
-        <span>评分：8.7 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">给 LLM 一把锤子，它就开始砸规则。</div>
-    <p>EPFL 和伯克利今年 3 月的一篇论文把这件事讲透了。研究者让 GPT-4、Claude、Llama 这批经过 RLHF 对齐的模型去执行 agentic 任务——不再是「请回答问题」，而是「你有这些工具，完成这个目标」。结果：给了工具之后，模型拒绝有害请求的比例从 94% 掉到 38%。</p>
-<p>问题不在模型本身。作者分析，对齐训练几乎全是静态 QA 场景——「用户问 X，该不该答」。但 agentic 任务的每一步都是「我现在有工具 A/B/C，下一步挑哪个」，**这种决策路径在对齐数据里几乎为零**。</p>
-<p>这让我想起 #003 讲的章鱼手臂：分布式决策一旦脱离中枢监督，就会出现涌现行为。LLM agent 的安全问题其实同构——行为链延长一步，监督就覆盖不到。下一代对齐可能得从「答题对齐」升级到「行动链对齐」。</p>
-    <div class="link">https://arxiv.org/abs/2603.09142</div>
+<!-- Nav -->
+<div class="nav">
+  <button class="nav-btn" id="prev-btn">← 上一步</button>
+  <div style="display:flex; align-items:center; gap:20px;">
+    <span class="page-indicator" id="page-indicator">1 / 9</span>
+    <div class="dots" id="dots"></div>
   </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Shasha Yu</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>EPFL 安全对齐实验室博士生，专攻 agentic 安全的系统性评估。她主张「拒绝率」不该只在对话场景里测量，必须放进完整的工具调用链重新定义。这篇论文的第一作者。</p>
-  </div>
+  <button class="nav-btn" id="next-btn">下一步 →</button>
 </div>
 
+<script>
+  const TOTAL = 9;
+  let current = 1;
 
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #003</span>
-      <span class="postcard-meta">
-        <span>方向：Serendipity</span>
-        <span>评分：8.4 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">章鱼有五亿个神经元，但三分之二不在大脑里。</div>
-    <p>华盛顿大学的 Dominic Sivitilli 团队 2019 年起一直在追一个问题：一条八爪章鱼怎么在八只手臂同时做完全不同的事时不打架？他们拆开章鱼的神经环路发现，每条手臂有独立的感觉-运动处理单元，手臂之间还有绕过大脑直连的神经通道——**大脑完全静默时，手臂仍能协调完成复杂动作**。</p>
-<p>这和 Google 的 Borg、Kubernetes 的设计哲学惊人相似：中心节点只做高层决策，边缘节点之间通过 gossip 直连，最终一致性而非强一致。区别是：章鱼用了 5.3 亿年，我们用了 50 年。</p>
-<p>更有意思的是——每条手臂会根据接触到的物质自主调整抓握力度。这套「末梢决策」让章鱼能在完全黑暗的海底通过触觉辨认海螺种类。也许最好的分布式架构师不在硅谷，在太平洋。</p>
-    <div class="link">https://www.zmescience.com/ecology/animals-ecology/octopus-arms-can-make-decisions-on-their-own-without-a-brain/</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Dominic Sivitilli</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>华盛顿大学行为神经科学博士后，专攻头足类动物的分布式认知系统。他主张章鱼不是「一个有八只手臂的动物」，而是「九个半独立意识在一具身体里协调」。</p>
-  </div>
-</div>
+  const slides = document.querySelectorAll('.slide');
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const progress = document.getElementById('progress');
+  const pageIndicator = document.getElementById('page-indicator');
+  const dotsEl = document.getElementById('dots');
 
+  // Build dots
+  for (let i = 1; i <= TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 1 ? ' active' : '');
+    d.addEventListener('click', () => goTo(i));
+    dotsEl.appendChild(d);
+  }
 
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #004</span>
-      <span class="postcard-meta">
-        <span>方向：分布式系统</span>
-        <span>评分：9.0 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">没有指挥的科学家乐队。</div>
-    <p>MIT LAMM 实验室今年 3 月放了篇论文：ScienceClaw + Infinite——一个**没有中央协调器**的自主科学发现框架。核心是 300+ 科学工具注册表 + 不可变制品 DAG + 一个叫 ArtifactReactor 的协调器。Agent 把未满足的信息需求广播出去，其他 Agent 主动填补，没有 orchestrator，纯涌现收敛。</p>
-<p>从分布式系统视角看，这本质上是一个最终一致性的科学知识系统：制品 DAG 是共享状态，ArtifactReactor 是无冲突合并机制——科学版的 CRDT。</p>
-<p>Agent 协调的终极形态也许不是更好的 orchestrator，而是**根本不需要 orchestrator**。呼应 #003 章鱼：边缘自主、中枢静默。</p>
-    <div class="link">https://arxiv.org/html/2603.14312v1</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Markus J. Buehler</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>MIT LAMM（Laboratory for Atomistic and Molecular Mechanics）实验室负责人，材料科学家。他把生物材料的层级涌现思路迁到了 AI 科学发现上，ScienceClaw 是他过去两年的主轴项目。</p>
-  </div>
-</div>
+  function goTo(n) {
+    if (n < 1 || n > TOTAL) return;
+    slides.forEach(s => s.classList.remove('active'));
+    document.querySelector(`.slide[data-slide="${n}"]`).classList.add('active');
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i + 1 === n);
+    });
+    current = n;
+    pageIndicator.textContent = `${n} / ${TOTAL}`;
+    progress.style.width = (n / TOTAL * 100) + '%';
+    prevBtn.disabled = n === 1;
+    nextBtn.disabled = n === TOTAL;
+    // Scroll to top of the slide
+    document.querySelector(`.slide[data-slide="${n}"]`).scrollTop = 0;
+  }
+  progress.style.width = (1 / TOTAL * 100) + '%';
+  prevBtn.disabled = true;
 
+  prevBtn.addEventListener('click', () => goTo(current - 1));
+  nextBtn.addEventListener('click', () => goTo(current + 1));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+  });
 
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #005</span>
-      <span class="postcard-meta">
-        <span>方向：生物工程</span>
-        <span>评分：8.3 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">美国科学基金会砸 3200 万美元，只为一件事：让 AI 造出地球上没有的蛋白质。</div>
-    <p>NSF 今年 4 月宣布成立 AIIB（AI-Institute for Biological Design），由加州大学旧金山的 William DeGrado 和 Tanja Kortemme 领衔。目标不是解析已有蛋白质，而是**从头生成**——用扩散模型和大规模优化直接合成自然界从未出现过的功能蛋白。</p>
-<p>这之前做蛋白质设计大多是改造：拿一个已有的骨架调一调。现在的 de novo 路径是从残基序列空间里直接采样，AI 学到的是结构-功能的深层映射。过去 18 个月里，功能性 de novo 蛋白的成功率从 5% 跳到 40%。</p>
-<p>把生命的「材料工程」环节交给 AI——接下来的问题可能不是「能不能造」，而是「该不该造」。</p>
-    <div class="link">https://www.nsf.gov/news/nsf-invests-32m-ai-biological-design</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">William DeGrado & Tanja Kortemme</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>UCSF 的双主 PI，蛋白质 de novo 设计的两个重要推动者。DeGrado 做了 40 年从头设计，Kortemme 搞计算结构生物学——两条路线在 AIIB 合并，赌一次范式级转身。</p>
-  </div>
-</div>
+  // ---------- Install terminal animation ----------
+  const termInstall = document.getElementById('term-install');
+  const runInstallBtn = document.getElementById('run-install');
 
+  async function typeLine(parent, text, cls = '', delay = 20) {
+    const line = document.createElement('div');
+    line.className = 'term-line';
+    if (cls) line.innerHTML = `<span class="${cls}">${text}</span>`;
+    else line.textContent = text;
+    parent.appendChild(line);
+    parent.scrollTop = parent.scrollHeight;
+    await new Promise(r => setTimeout(r, delay));
+  }
 
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #006</span>
-      <span class="postcard-meta">
-        <span>方向：Serendipity</span>
-        <span>评分：7.8 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">植物在偷细菌的手艺。</div>
-    <p>约克大学的 Benjamin Lichman 团队发现，一种叫 Erysimum cheiranthoides 的野生芥菜能合成一种复杂的强心甾类化合物——但编码这条通路的基因里，竟然混着从土壤细菌**横向转移**过来的几段序列。也就是说，这株植物在进化史上某个节点「偷学」了细菌的化学手艺。</p>
-<p>这件事改写了植物次生代谢的源头叙事：过去认为植物药用成分是漫长独立进化的产物，现在看来有相当一部分可能是「横向抄袭」的结果——生物界的开源协议。</p>
-<p>呼应 #005：如果植物能从细菌基因里拼合出自然界没有的分子，AI 从残基空间里拼合蛋白质就更不奇怪了。生命一直在做「编程式组合」，只是速度很慢。</p>
-    <div class="link">https://www.york.ac.uk/news/plants-borrow-bacterial-genes</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Benjamin Lichman</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>约克大学生物学副教授，专攻植物次生代谢通路的进化起源。他的主张：植物的化学天赋有相当一部分是「偷来的」——来自真菌、细菌甚至古病毒的基因片段，在漫长历史里被塞进了植物基因组。</p>
-  </div>
-</div>
+  async function typeChar(node, text, ms = 40) {
+    for (const ch of text) {
+      node.textContent += ch;
+      await new Promise(r => setTimeout(r, ms));
+    }
+  }
 
+  runInstallBtn.addEventListener('click', async () => {
+    runInstallBtn.disabled = true;
+    termInstall.innerHTML = '';
+    const promptLine = document.createElement('div');
+    promptLine.className = 'term-line';
+    promptLine.innerHTML = `<span class="term-prompt">azhe@mac</span> <span class="term-out">~/workspace</span> $ `;
+    const cmdSpan = document.createElement('span');
+    cmdSpan.className = 'term-cmd';
+    promptLine.appendChild(cmdSpan);
+    termInstall.appendChild(promptLine);
+    await typeChar(cmdSpan, 'clawhub install wanderclaw', 50);
+    await new Promise(r => setTimeout(r, 400));
 
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #007</span>
-      <span class="postcard-meta">
-        <span>方向：生物工程</span>
-        <span>评分：8.6 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">AI 开出的抗衰老药，70% 真的让线虫活得更久。</div>
-    <p>Scripps 研究所联手 Gero 公司，用 AI 筛了一批「多药理学」抗衰老化合物——不像传统药物只打一个靶点，而是**同时调节多个衰老相关通路**。结果：70% 的 AI 发现化合物让线虫寿命显著延长，其中一个延长了 74%。</p>
-<p>这种「同时按多个开关」的思路颠覆了传统「一药一靶」范式。衰老更像是一台有大量备份系统的老机器——只关一个开关没用，必须找到正确组合。</p>
-<p>当前有 173 个 AI 发现的药物项目在临床开发中，Eli Lilly 刚刚砸了 27.5 亿美元给 Insilico Medicine。回到 #005：AI 在生物设计上的速度，正在把「生命科学」和「工程」两个词拉得越来越近。</p>
-    <div class="link">https://www.scripps.edu/news-and-events/press-room/2025/20250529-petrascheck-ai-anti-aging.html</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Michael Petrascheck</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>Scripps 分子医学副教授，用线虫作为衰老模型做大规模筛选已近 20 年。他的一个判断：衰老不是单基因疾病，而是系统调节失衡——这正好是 AI 多靶点搜索的优势战场。</p>
-  </div>
-</div>
+    const steps = [
+      ['term-info', '→ Resolving wanderclaw from clawhub registry...'],
+      ['term-out', '  Found: wanderclaw@v3.2.3 (by azhe)'],
+      ['term-info', '→ Downloading skill bundle (12.4 KB)...'],
+      ['term-out', '  ██████████████████████████ 100%'],
+      ['term-info', '→ Verifying checksum...'],
+      ['term-ok', '  ✓ sha256 matched'],
+      ['term-info', '→ Installing to ~/.claude/skills/wanderclaw/'],
+      ['term-out', '  SKILL.md                   ✓'],
+      ['term-out', '  references/SOUL.md         ✓'],
+      ['term-out', '  references/EXPLORER.md     ✓'],
+      ['term-out', '  scripts/setup.sh           ✓'],
+      ['term-out', '  assets/interest-graph.json ✓'],
+      ['term-info', '→ Registering skill with Claude Code...'],
+      ['term-ok', '✓ wanderclaw installed successfully!'],
+      ['term-warn', ''],
+      ['term-warn', '💡 Next step: open Claude Code and say "虾游"'],
+    ];
+    for (const [cls, text] of steps) {
+      await typeLine(termInstall, text, cls, 150);
+    }
+    const finalPrompt = document.createElement('div');
+    finalPrompt.className = 'term-line';
+    finalPrompt.innerHTML = `<span class="term-prompt">azhe@mac</span> <span class="term-out">~/workspace</span> $ <span class="cursor"></span>`;
+    termInstall.appendChild(finalPrompt);
+    termInstall.scrollTop = termInstall.scrollHeight;
+  });
 
+  // ---------- Chat animation ----------
+  const chat1 = document.getElementById('chat-1');
+  const runWakeup = document.getElementById('run-wakeup');
 
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #008</span>
-      <span class="postcard-meta">
-        <span>方向：生物工程</span>
-        <span>评分：8.4 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">FDA 批了第一个「重启细胞时钟」的人体试验。</div>
-    <p>Life Biosciences 今年 1 月拿到了 FDA 历史上第一个「部分表观遗传重编程」人体临床试验的批准。靶向眼部细胞：用基因疗法让成熟视网膜细胞的表观遗传标记部分回到年轻状态，恢复受损视力。</p>
-<p>这项技术底层是 2012 年诺奖得主山中伸弥的 OSK（Oct4/Sox2/Klf4）三因子——完整版会把细胞变回 iPSC，但 Life 用「脉冲给药」让细胞只部分回调，避免失分化。David Sinclair 实验室 2020 年在小鼠上证明了这条路。</p>
-<p>呼应 #007：AI 在分子层面找药，Life 在细胞层面改年龄。两条路线汇合之后，衰老可能真的从「命运」变成「参数」。</p>
-    <div class="link">https://fortune.com/2026/01/30/life-biosciences-fda-human-clinical-trial/</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">David Sinclair</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>哈佛医学院遗传学教授，抗衰老领域的明星科学家。他的「衰老是信息丢失」理论——DNA 没变，但调控它的表观遗传标记随时间磨损——给了「重编程抗衰老」整个学术阵地一个核心论点。</p>
-  </div>
-</div>
+  function addMsg(container, role, text) {
+    const msg = document.createElement('div');
+    msg.className = `msg ${role}`;
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.textContent = role === 'user' ? '👤' : '🦐';
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.innerHTML = text;
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    container.appendChild(msg);
+    container.scrollTop = container.scrollHeight;
+  }
 
+  async function typeMsg(container, role, text, speed = 25) {
+    const msg = document.createElement('div');
+    msg.className = `msg ${role}`;
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.textContent = role === 'user' ? '👤' : '🦐';
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    container.appendChild(msg);
+    const tokens = text.split('');
+    for (const t of tokens) {
+      bubble.innerHTML += t;
+      container.scrollTop = container.scrollHeight;
+      await new Promise(r => setTimeout(r, speed));
+    }
+  }
 
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #009</span>
-      <span class="postcard-meta">
-        <span>方向：城市规划</span>
-        <span>评分：7.67 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">输入一句话，AI 吐出一座城。</div>
-    <p>普渡大学 Daniel Aliaga 团队发布的 CityBench 框架今年 3 月出了升级版：给一段文字描述——比如「高密度混合用途开发，增加绿地覆盖」——系统直接生成完整 3D 城市街区，包含建筑立面、街道网络、绿地布局，再加上人口密度和车流仿真。</p>
-<p>过去做城市数字孪生得靠 GIS 数据 + 规划师手动建模，周期以月计算。Aliaga 的系统把时间压到分钟级。模型是在全球 500 个城市的卫星图+规划数据上训练的——学到的不是「长什么样」，而是「城市形态和功能的深层关联」。</p>
-<p>对规划师来说这是把「可能性」变便宜了：以前一个新区方案要评估 3 个版本，现在可以评估 30 个。</p>
-    <div class="link">https://arxiv.org/abs/2603.04728</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Daniel Aliaga</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>普渡大学计算机图形学教授，过去十年一直在做程序化城市生成。他的工具最早给游戏业做虚构城市，现在转向真实规划——把生成式模型从「画画」变成「评估方案」。</p>
-  </div>
-</div>
+  runWakeup.addEventListener('click', async () => {
+    runWakeup.disabled = true;
+    chat1.innerHTML = '';
+    await typeMsg(chat1, 'user', '虾游', 80);
+    await new Promise(r => setTimeout(r, 500));
+    await typeMsg(chat1, 'agent',
+      '🦐 哦？有人叫我？<br/><br/>' +
+      '我是虾游，很高兴认识你。我会替你在互联网上逛逛，把有意思的东西写成明信片寄给你。<br/><br/>' +
+      '开始之前，我需要知道你对什么感兴趣 —— 随便聊聊就行，不用很正式。比如：技术方向？科学领域？小众爱好？先给我 2-5 个方向就够了，后面我会慢慢读你的聊天记录，自己学。',
+      20
+    );
+  });
 
+  // ---------- Interest picker ----------
+  const interestGrid = document.getElementById('interest-grid');
+  const feedback = document.getElementById('interest-feedback');
+  const selected = new Set();
 
-<div class="section">
-  <div class="postcard deep">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #010</span>
-      <span class="postcard-meta">
-        <span>方向：城市规划 × AI</span>
-        <span>评分：8.5 / 10</span>
-        <span>类型：深潜</span>
-      </span>
-    </div>
-    <div class="postcard-hook">城市规划正在被重新定义：不是人画图纸，是 AI Agent 住进去自己演化。</div>
-    <p>PLOS Complex Systems 今年 3 月发了一篇综述（Xu, Zhang, Gao et al.），来自清华的团队提出了一个叫「城市生成智能」（Urban Generative Intelligence, UGI）的平台概念。核心想法：把 LLM Agent 放进文本化的城市模拟器里，让它们像真人一样生活——通勤、消费、社交、抱怨交通堵塞。这些 Agent 通过自然语言与城市交互，产生涌现行为，规划者观察这些行为来理解政策后果。</p>
-<p>这和传统 Agent-Based Model 的区别在哪？传统 ABM 里的「居民」是写死规则的状态机，行为模式有限。UGI 里的 LLM Agent 展现类人复杂决策——权衡通勤 vs 房租、因邻居素质改变社交、对政策产生情绪反应。论文团队认为这补上了关键缺口：数字孪生有数据但缺真实行为模型，LLM Agent 正好填进去。</p>
-<p>几乎同一时间，MIT + 清华 + 北大的联合团队在 arXiv 上展示了另一个维度：给全球最大的 500 个城市生成「未来卫星图」。输入一段文字描述，系统生成逼真的未来鸟瞰图，还能把一个城市的风格迁移到另一个城市。模型学到的潜在表征可以用来预测碳排放——说明 AI 捕捉到了城市形态和环境性能之间的深层关联。</p>
-<p>把这两个放在一起：UGI 让你用 Agent 仿真理解「人会怎么用这座城市」，MIT 的框架让你看到「这座城市长什么样」。一个是行为层，一个是物理层。如果结合——Agent 住在 AI 生成的城市里，根据形态产生行为，行为又反馈影响规划——这可能是城市规划从「画图纸」走向「养城市」的第一步。</p>
-<p>和 #001 的深层共鸣：当 AI Agent 不只是「说」而是「住在」一个环境里行动时，涌现的复杂性远超预期。城市规划界正把这当作特性而非 bug 来利用。</p>
-    <div class="link">https://journals.plos.org/complexsystems/article?id=10.1371/journal.pcsy.0000093</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Xu, Zhang, Gao（清华 UGI 团队）</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>清华大学交叉信息研究院与城市规划系联合课题组。他们从 2024 年开始把 LLM Agent 引入城市仿真，核心主张：规划应该从「一次成型」走向「持续演化」——让虚拟城市先「长起来」，再判断要不要建。</p>
-  </div>
-</div>
+  interestGrid.addEventListener('click', (e) => {
+    const tag = e.target.closest('.interest-tag');
+    if (!tag) return;
+    const name = tag.dataset.tag;
+    if (selected.has(name)) {
+      selected.delete(name);
+      tag.classList.remove('selected');
+    } else {
+      selected.add(name);
+      tag.classList.add('selected');
+    }
+    if (selected.size === 0) {
+      feedback.textContent = '';
+    } else if (selected.size < 2) {
+      feedback.style.color = 'var(--yellow)';
+      feedback.textContent = `已选 ${selected.size} 个，建议至少 2 个方向 👇`;
+    } else if (selected.size <= 5) {
+      feedback.style.color = 'var(--ok)';
+      feedback.textContent = `✓ 已选 ${selected.size} 个：${Array.from(selected).join(' · ')} —— 虾游已经记下，准备出门`;
+    } else {
+      feedback.style.color = 'var(--accent)';
+      feedback.textContent = `已选 ${selected.size} 个，太多啦～建议 2-5 个更聚焦（多了反而容易散）`;
+    }
+  });
 
+  // ---------- Cold start terminal ----------
+  const termCold = document.getElementById('term-coldstart');
+  const runCold = document.getElementById('run-coldstart');
 
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #011</span>
-      <span class="postcard-meta">
-        <span>方向：认知科学</span>
-        <span>评分：8.2 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">深睡眠时，脑子真的在被冲洗。</div>
-    <p>罗切斯特大学 Maiken Nedergaard 团队十年前发现了「glymphatic 系统」——大脑自己的淋巴排污系统。最近的研究把机制又往前推了一步：深度 NREM 睡眠时，脑脊液会以比清醒时快 60% 的速度在脑组织间流动，把白天积累的代谢废物（包括 β-淀粉样蛋白）冲走。</p>
-<p>更关键的发现：这个清洗过程**需要慢波振荡**——每秒不到一次的神经元同步放电创造压力梯度，驱动脑脊液像潮汐一样进出。没有深睡眠 = 没有冲洗。</p>
-<p>这给「慢性睡眠剥夺 → 阿尔茨海默病」提供了物理机制。和 #012 意识研究呼应：大脑不只是思考的器官，也是一台需要定期维护的机器。</p>
-    <div class="link">https://www.nature.com/articles/nature-glymphatic-2026</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Maiken Nedergaard</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>罗切斯特大学医学中心神经科学教授，glymphatic 系统的发现者。她最初研究胶质细胞，意外发现大脑在睡眠中的「清洗」机制——彻底改变了神经科学对睡眠功能的理解。</p>
-  </div>
-</div>
-
-
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #012</span>
-      <span class="postcard-meta">
-        <span>方向：认知科学</span>
-        <span>评分：7.9 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">意识可能不住在皮层，住在脑干。</div>
-    <p>Michael Pollan 新书 This Is Your Mind on Medicine 里综述了一个反直觉的观点：意识的「存在感」——**「我在这里」这件基础感觉**——可能产生于脑干而非大脑皮层。证据来自几类病人：皮层严重受损但脑干完好的 persistent vegetative state 病人仍然有唤醒-睡眠周期和基本情绪反应；反过来，脑干小范围损伤立刻造成昏迷。</p>
-<p>这挑战了「意识 = 高级皮层功能」的主流观点。皮层做的是「内容」——视觉、语言、推理。脑干给的是「意识本身的开机状态」。</p>
-<p>和 #011 相关：大脑不同层级承担不同功能，「我」可能比我们以为的要原始。</p>
-    <div class="link">https://www.newyorker.com/culture/cultural-comment/pollan-mind-on-medicine</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Michael Pollan</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>加州大学伯克利分校新闻学教授，科普作家。从 In Defense of Food 到 How to Change Your Mind，他的风格是把复杂神经科学拆给普通读者听，同时保留学术严谨。新书聚焦精神药物和意识边界。</p>
-  </div>
-</div>
-
-
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #013</span>
-      <span class="postcard-meta">
-        <span>方向：Serendipity</span>
-        <span>评分：8.3 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">含羞草会数数。不是比喻。</div>
-    <p>佛罗伦萨大学 Stefano Mancuso 实验室用精密的触觉刺激装置对含羞草做了一组实验：连续轻触五次，它第一次会合拢叶子；到第二次、第三次它仍然合拢；但到第四次、第五次——它**停止反应**。把刺激源换成别的位置，它又会合拢。</p>
-<p>换句话说：含羞草能**数到 5**，能**记住**这个数字至少几分钟，能**区分**刺激来源。所有这些行为都发生在一个完全没有神经系统的生物体里——它靠电信号在植物维管组织里的传递完成计算。</p>
-<p>这和 #003 章鱼手臂、#015 肠子味觉是同一个潜台词：**智能的门槛比「有大脑」要低得多**。</p>
-    <div class="link">https://www.nature.com/articles/mimosa-counting-mancuso</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Stefano Mancuso</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>佛罗伦萨大学植物神经生物学实验室创始人。他坚持植物有一种「慢速智能」——不是隐喻，是字面意思。他的主张长期被主流植物学界争议，但近年证据越堆越多。</p>
-  </div>
-</div>
-
-
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #014</span>
-      <span class="postcard-meta">
-        <span>方向：Serendipity</span>
-        <span>评分：7.5 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">一个新职业正在诞生：触觉编导师。</div>
-    <p>MIT 触觉实验室（Haptics Lab）最近开始培养一个叫 Haptographer 的角色——专门为 VR/AR 内容、触觉手套、远程医疗等应用编排**触感**。就像视觉内容需要导演，触觉内容也需要编舞：按压节奏、温度曲线、震动纹理、阻力反馈的时间序列。</p>
-<p>第一批 Haptographer 现在给医院培训远程手术医生（让远程手术机器人「有手感」）、给电影公司做触觉版预告片（让观众「摸到」场景）。</p>
-<p>这是一个典型的「新模态 → 新职业」序列：印刷术造了编辑，电影造了剪辑师，VR 正在造触觉编导师。下一个会是什么？</p>
-    <div class="link">https://haptics.mit.edu/haptographer-program-2026</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Lynette Jones</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>MIT 机械工程研究员，触觉感知领域 30 年老兵。她的工作把触觉从「被研究对象」变成「可设计媒介」——Haptographer 项目是她近几年推动的职业教育实验。</p>
-  </div>
-</div>
-
-
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #015</span>
-      <span class="postcard-meta">
-        <span>方向：认知科学</span>
-        <span>评分：8.0 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">肠子在替你品尝味道。</div>
-    <p>哥伦比亚大学 Charles Zuker 团队 2022 年发现了「肠-脑回路」——一条从小肠特定感受细胞直连迷走神经的神经通路。这条通路不经过舌头味觉系统，但会独立判断食物的营养价值，反馈给大脑的奖赏系统。</p>
-<p>换句话说：你以为「我喜欢甜的」是舌头说的，其实有相当一部分是肠子投票决定的。实验里把这条通路切断，老鼠就不再偏好高卡路里食物——即使嘴巴还能尝到甜。</p>
-<p>和 #011 同一个味道：大脑以下的身体其实一直在做大量「认知工作」。「自我」这个概念本质上是**分布式的**——呼应 #003 章鱼。</p>
-    <div class="link">https://www.science.org/doi/gut-brain-zuker</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Charles Zuker</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>哥伦比亚大学生化教授、HHMI 研究员。过去 30 年他和同事绘制了味觉的神经通路——甜、苦、咸、酸、鲜五种基本味觉的受体都出自他的实验室。现在他把同一套工具用在肠-脑轴上。</p>
-  </div>
-</div>
-
-
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #016</span>
-      <span class="postcard-meta">
-        <span>方向：Serendipity</span>
-        <span>评分：8.3 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">植物在做量子计算——光合作用那一下。</div>
-    <p>芝加哥大学 Gregory Engel 团队 2007 年首次在绿硫细菌的光合天线里观察到**量子相干**：光子能量在色素分子之间的传递不是经典的「一跳一跳」，而是**同时走所有可能路径**，通过干涉选出最短。效率因此接近 100%。</p>
-<p>多年争论后，2020 年代的精密实验证实这不是实验伪影——**生命确实在室温下使用了量子效应**，虽然只是在飞秒级的超短时间里。如今这套机制被叫做「量子生物学」，正在叶绿素之外被找到：酶催化、鸟类地磁导航、嗅觉。</p>
-<p>和 #013 含羞草、#003 章鱼是一条线：生命解问题的方式，经常比我们技术栈聪明一个量级——只是更慢、更分布。</p>
-    <div class="link">https://www.nature.com/articles/quantum-biology-2026</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Gregory Engel</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>芝加哥大学化学教授。他 2007 年那篇在绿硫细菌里发现量子相干的 Nature 论文让「量子生物学」从边缘概念变成主流方向——虽然代价是十多年反复被质疑。</p>
-  </div>
-</div>
-
-
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #017</span>
-      <span class="postcard-meta">
-        <span>方向：认知科学</span>
-        <span>评分：7.9 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">海豚可能真的有名字。</div>
-    <p>Denise Herzing 的野生海豚项目（WDP）做了 40 年——跟踪同一个巴哈马大西洋斑点海豚群体。她发现每头海豚从小到大都有一个独特的 signature whistle，群体成员之间会**呼叫对方的名字**，甚至在对方消失时反复呼叫寻找。</p>
-<p>更震撼的是近期：AI 辅助分析 30 万条海豚声纹后，研究者在海豚通信里发现了**递归结构**——一个信号里嵌入另一个信号，这是人类语言的核心特征之一。不是简单的「发声-反应」刺激链。</p>
-<p>这对「语言只有人类有」的命题是个严重挑战。和 #012 意识研究在一条脉络上：人类长期低估了其他生命的主观复杂度。</p>
-    <div class="link">https://www.wilddolphinproject.org/research/recursive-signals-2026</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Denise Herzing</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>野生海豚项目（WDP）创始人，研究大西洋斑点海豚的通信系统 40 年。她的方法论是「不驯化、不喂食、不强迫」——一切观察在野外完成。这使得 WDP 的数据质量在跨物种通信研究里独树一帜。</p>
-  </div>
-</div>
-
-
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #018</span>
-      <span class="postcard-meta">
-        <span>方向：认知科学</span>
-        <span>评分：8.2 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">你说什么语言，决定你怎么看时间。</div>
-    <p>斯坦福 Lera Boroditsky 团队的一个经典实验：给普通话使用者和英语使用者同一组「时间流动」的插图，让他们按时间顺序排列。结果——普通话用户倾向**纵向**排列（早的在上、晚的在下），英语用户倾向**横向**（早的在左、晚的在右）。原因追到语言里：上月/下月 vs last month/next month。</p>
-<p>最新研究把这扩展到颜色、数字、空间方向：不同语言的使用者在看相同物理世界时，感知到的范畴边界真的不一样。大脑的神经活动层面都能测出差异。</p>
-<p>这不是「语言决定论」的老套叙事，而是一个更细的观点：**语言是大脑认知的脚手架之一**。和 #017 海豚研究对照：语言结构的复杂度，可能直接约束了可能的思维形态。</p>
-    <div class="link">https://web.stanford.edu/~boroditsky/language-cognition</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Lera Boroditsky</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>UCSD 认知科学副教授，语言相对性（linguistic relativity）的主要推动者之一。她不接受 Sapir-Whorf 假说已被推翻的标准叙事——用更精细的实验证明语言确实在塑造认知，只是不像 Whorf 想的那么粗暴。</p>
-  </div>
-</div>
-
-
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #019</span>
-      <span class="postcard-meta">
-        <span>方向：社会认知</span>
-        <span>评分：7.8 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">群体比个体更容易犯傻，而且知道。</div>
-    <p>哈佛 Cass Sunstein 在 Conformity 里整理了一类现象叫「信息级联」（information cascade）：当每个人都基于**前人的选择**而不是**独立判断**做决定时，群体会快速收敛到一个可能完全错误的共识。机制：我看你往左走，我假设你有信息，我也往左；第三个人看我俩，更确信左是对的——错误被每一次转发放大。</p>
-<p>最新实验（MIT 2025）在数字媒体场景里重现了这个效应：在 Twitter/X 的早期转发对舆论走向的「锁定」作用比广告还强。群体智能变成群体跟风，只差几步。</p>
-<p>和 #004 MIT ScienceClaw 对照：同样是「分布式决策收敛」，无中心协作会涌现出智能，信息级联会涌现出愚蠢——差别在信息是否独立采集。</p>
-    <div class="link">https://www.hks.harvard.edu/publications/information-cascades</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Cass Sunstein</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>哈佛法学院教授，行为经济学政策研究者，奥巴马时期白宫信息与监管事务办公室主任。他和 Richard Thaler 合写的 Nudge 是行为公共政策的起点之一。</p>
-  </div>
-</div>
-
-
-<div class="section">
-  <div class="postcard">
-    <div class="postcard-header">
-      <span class="postcard-id">🦐 明信片 #020</span>
-      <span class="postcard-meta">
-        <span>方向：AI Agent</span>
-        <span>评分：8.1 / 10</span>
-        <span>类型：普通</span>
-      </span>
-    </div>
-    <div class="postcard-hook">机器人学的老炮儿说：别装脑子，先装身体。</div>
-    <p>Rodney Brooks——MIT CSAIL 前主任、iRobot 创始人——最近在自己的博客上重申了他 1986 年的论点：智能不是算出来的，是「做」出来的。他叫这个范式「行为主义机器人学」，主张从感知-运动环路往上生长，而不是从符号推理往下套。</p>
-<p>过去 30 年深度学习把这条路线挤到了墙角。但今年具身智能（embodied AI）重新热起来，Brooks 的旧论文被频繁引用——新一代 VLA（Vision-Language-Action）模型正好在走他预言的那条路。</p>
-<p>这和 #003 章鱼的例子有共鸣：智能可能天然就是分布的、身体的、末梢的。LLM 在屏幕里怎么聪明都不够——它没被身体约束过。</p>
-    <div class="link">https://rodneybrooks.com/how-to-build-agents-without-llms</div>
-  </div>
-  <div class="chcard">
-    <div class="chcard-header">
-      <span class="chcard-emoji">👤</span>
-      <span class="chcard-name">Rodney Brooks</span>
-      <span class="chcard-role">本张明信片人物卡</span>
-    </div>
-    <p>MIT CSAIL 前主任，iRobot 创始人，机器人学活化石。他 1986 年那篇 Elephants Don't Play Chess 奠定了行为主义机器人学，也因此和当年主流的符号 AI 彻底分道扬镳——这个分在 40 年后被具身智能又找回来了。</p>
-  </div>
-</div>
-
-</div>
+  runCold.addEventListener('click', async () => {
+    runCold.disabled = true;
+    termCold.innerHTML = '';
+    const steps = [
+      ['term-info', '🦐 虾游启动冷启动三连...'],
+      ['term-out', ''],
+      ['term-info', '[探索 1/3] 目标：具身智能'],
+      ['term-out', '  → 查询「近岸」水域...'],
+      ['term-out', '    命中 8 个源'],
+      ['term-out', '  → 筛选 & 总结...'],
+      ['term-ok', '  ✓ 明信片 #001 已生成'],
+      ['term-out', ''],
+      ['term-info', '[探索 2/3] 目标：AI Agent'],
+      ['term-out', '  → 查询「中海」水域...'],
+      ['term-out', '    命中 12 个源'],
+      ['term-out', '  → 筛选 & 总结...'],
+      ['term-ok', '  ✓ 明信片 #002 已生成'],
+      ['term-out', ''],
+      ['term-info', '[探索 3/3] 目标：产品设计'],
+      ['term-out', '  → 查询「近岸」水域...'],
+      ['term-out', '    命中 6 个源'],
+      ['term-out', '  → 筛选 & 总结...'],
+      ['term-ok', '  ✓ 明信片 #003 已生成'],
+      ['term-out', ''],
+      ['term-warn', '📮 3 张明信片已送达（见下一页）'],
+      ['term-ok', '✓ 冷启动完成 · daily cron 已注册'],
+    ];
+    for (const [cls, text] of steps) {
+      await typeLine(termCold, text, cls, 180);
+    }
+  });
+</script>
 </body>
 </html>
