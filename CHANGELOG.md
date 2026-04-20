@@ -19,7 +19,7 @@
 ## v3.2.2 (2026-04-20)
 
 ### 行为层修复 — 阻止幻觉与虚报
-真实环境测试（47.236.224.62 OpenClaw 实例）暴露出 skill 描述性 TRIGGER RULES 被 agent 当作背景信息忽略的问题，导致：
+真实环境测试（远端 OpenClaw 实例）暴露出 skill 描述性 TRIGGER RULES 被 agent 当作背景信息忽略的问题，导致：
 - Agent 收到 "嗨，虾游？" 后只回随意问候，不检查 state.json、不走 onboarding
 - 显式请求 onboarding 时 agent 从记忆幻觉用户兴趣（没问用户），自己 mkdir+cp 建 state.json 漏 5 个字段
 - 声称 "✅ 5个定时任务已注册"，实际 `openclaw cron list` 为空
