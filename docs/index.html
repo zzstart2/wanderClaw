@@ -146,6 +146,37 @@
   /* Hide old per-slide run buttons — auto-triggered now */
   .run-btn { display: none !important; }
 
+  /* Inline "继续" CTA — appears at bottom of each slide when step done */
+  .step-cta {
+    margin: 40px auto 20px;
+    text-align: center;
+    animation: cta-fade-in .45s ease both;
+  }
+  .step-cta-btn {
+    background: var(--accent);
+    color: #fff;
+    border: 0;
+    padding: 14px 36px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(255,122,89,.35);
+    transition: all .2s;
+  }
+  .step-cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(255,122,89,.55);
+  }
+  .step-cta-hint {
+    display: block; color: var(--muted); font-size: 12px;
+    margin-top: 8px;
+  }
+  @keyframes cta-fade-in {
+    0%   { opacity: 0; transform: translateY(14px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
   /* Terminal */
   .terminal {
     background: #0a0e13; border-radius: 10px;
@@ -448,7 +479,7 @@
         <h1>虾游 <span style="color: var(--muted); font-weight: 300;">WanderClaw</span></h1>
         <div class="tagline">替你逛互联网，把好东西寄回来。</div>
         <p class="lead">
-          一只有好奇心的 AI 龙虾，INTP 人格，每天自主在互联网深处探险，
+          一只有好奇心的 AI 龙虾，每天自主在互联网深处探险，
           把发现的知识宝藏写成「明信片」寄给你。<br/>
           <strong>OpenClaw Skill</strong> —— 安装即用，零代码，零配置。
         </p>
@@ -888,9 +919,32 @@
 
   // Track which auto-animation is currently running, so slide changes abort it.
   let animToken = 0;
+
+  function removeInlineCta() {
+    document.querySelectorAll('.step-cta').forEach(x => x.remove());
+  }
+  function showInlineCta(n) {
+    removeInlineCta();
+    const slide = document.querySelector(`.slide[data-slide="${n}"]`);
+    if (!slide) return;
+    const inner = slide.querySelector('.slide-inner') || slide;
+    const cta = document.createElement('div');
+    cta.className = 'step-cta';
+    cta.innerHTML = `
+      <button class="step-cta-btn" type="button">继续看下一步 →</button>
+      <span class="step-cta-hint">或按 → / Space 键</span>
+    `;
+    cta.querySelector('button').addEventListener('click', () => goTo(current + 1));
+    inner.appendChild(cta);
+  }
   function setNavReady(ready) {
-    if (ready && current !== TOTAL) nextBtn.classList.add('ready');
-    else nextBtn.classList.remove('ready');
+    if (ready && current !== TOTAL) {
+      nextBtn.classList.add('ready');
+      showInlineCta(current);
+    } else {
+      nextBtn.classList.remove('ready');
+      removeInlineCta();
+    }
   }
 
   async function goTo(n) {
@@ -1058,8 +1112,7 @@
   const feedback = document.getElementById('interest-feedback');
   const selected = new Set();
 
-  interestGrid.addEventListener('click', (e) => {
-    const tag = e.target.closest('.interest-tag');
+  function toggleInterest(tag) {
     if (!tag) return;
     const name = tag.dataset.tag;
     if (selected.has(name)) {
@@ -1081,7 +1134,29 @@
       feedback.style.color = 'var(--accent)';
       feedback.textContent = `已选 ${selected.size} 个，太多啦～建议 2-5 个更聚焦（多了反而容易散）`;
     }
+  }
+
+  interestGrid.addEventListener('click', (e) => {
+    toggleInterest(e.target.closest('.interest-tag'));
   });
+
+  // Auto-pick 3 when entering slide 4 (fresh state each time)
+  autoAnimations[4] = async (alive) => {
+    // Reset — clear previous selections so replay is clean
+    selected.clear();
+    interestGrid.querySelectorAll('.interest-tag.selected').forEach(t => t.classList.remove('selected'));
+    feedback.textContent = '';
+    await new Promise(r => setTimeout(r, 400));
+    if (!alive()) return;
+
+    const picks = ['具身智能', 'AI Agent', '产品设计'];
+    for (const name of picks) {
+      if (!alive()) return;
+      const tag = interestGrid.querySelector(`.interest-tag[data-tag="${name}"]`);
+      if (tag && !selected.has(name)) toggleInterest(tag);
+      await new Promise(r => setTimeout(r, 650));
+    }
+  };
 
   // ---------- Cold start terminal ----------
   const termCold = document.getElementById('term-coldstart');
