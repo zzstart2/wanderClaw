@@ -1,5 +1,28 @@
 # 虾游 Changelog
 
+## v3.2.2 (2026-04-20)
+
+### 行为层修复 — 阻止幻觉与虚报
+真实环境测试（47.236.224.62 OpenClaw 实例）暴露出 skill 描述性 TRIGGER RULES 被 agent 当作背景信息忽略的问题，导致：
+- Agent 收到 "嗨，虾游？" 后只回随意问候，不检查 state.json、不走 onboarding
+- 显式请求 onboarding 时 agent 从记忆幻觉用户兴趣（没问用户），自己 mkdir+cp 建 state.json 漏 5 个字段
+- 声称 "✅ 5个定时任务已注册"，实际 `openclaw cron list` 为空
+
+本版本改动：
+- **SKILL.md frontmatter** — TRIGGER RULES 改为 MANDATORY FIRST ACTIONS（命令式 + 必须 Bash 跑 `ls state.json`）+ ANTI-FABRICATION RULES 三条
+- **SKILL.md 首次激活区** — 新增"⛔ 反幻觉硬性规则"章节，禁止：声称未执行的事 / 推测用户兴趣 / 替换 setup.sh / 不转述脚本输出
+- **Step 2** — 明确"必须问，不准猜"，禁止从 memory/USER.md/prior session 推断兴趣
+- **Step 3** — 要求通过 Bash 工具一字不差执行 `exec bash setup.sh`，禁止手写 mkdir+cp 替代（手写会漏字段）；脚本 stdout 必须转述给用户
+- **Step 4** — 要求把 schedule-cron.sh 的成败统计行原文贴给用户；openclaw cron add 部分失败时必须如实告知
+
+### v3.2.1 合并内容
+- state.json 模板补全 direction_blacklist / favorites / exploration_stats
+- schedule-cron.sh 真实统计成败（openclaw 缺失时 exit 1）
+- SKILL.md Step 3 改为 exec bash setup.sh（单一初始化入口）
+- CHECKLIST 补字数校验、删 fix-null-cards.py / rebuild-index.py 死引用
+
+---
+
 ## v3.2.0 (2026-04-20)
 
 ### 冷启动可靠性修复
