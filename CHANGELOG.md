@@ -1,5 +1,21 @@
 # 虾游 Changelog
 
+## v3.2.3 (2026-04-20)
+
+### DORMANT 模型 + 一次性安装提示
+新用户完整体验测试（see docs/user-journey-test-2026-04-20.md）发现：用户刚装 skill 说"嗨？"时 agent 不触发虾游，用户也不知道要说"虾游"才行——UX 可发现性盲点。
+
+按项目定位（虾游是主 agent 的一个**角色/工具**，不抢主 identity），改动：
+- **SKILL.md frontmatter 重写**：删 `MANDATORY FIRST ACTIONS (on EVERY user message)`，改为 `ACTIVATION KEYWORDS` 显式列表（虾游/探索/明信片/深潜/收藏/黑名单/cron）+ `DORMANT 行为` 明确"没触发就不介入"
+- **SKILL.md body "⚡ 首次激活" 章节**：对齐 dormant 模型，开头就告知"用户说不含关键词的消息时，本 skill 不介入，主 agent 按自己节奏回"
+- **setup.sh 尾部**：向当日 `memory/YYYY-MM-DD.md` 追加一段一次性 onboarding 提示（附 `<!-- wanderclaw-install-nudge -->` 标记防重复）。主 agent 按 AGENTS.md 规范启动时会读当日 memory → 下次对话时自然地提一句"顺便说，你装了虾游，想试试说'虾游'"→ 提完自行删除该段落。完全不创建 workspace 根目录的新文件，不改 AGENTS.md/SOUL.md/USER.md。
+
+### v3.2.2 合并内容
+- 反幻觉硬性规则（声称必须有 tool 输出证据 / 不凭记忆猜兴趣 / 不手写替代 setup.sh / 脚本输出必须转述）
+- Step 2/3/4 改命令式
+
+---
+
 ## v3.2.2 (2026-04-20)
 
 ### 行为层修复 — 阻止幻觉与虚报
