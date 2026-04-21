@@ -1,5 +1,26 @@
 # 虾游 Changelog
 
+## v3.2.4 (2026-04-20)
+
+### Cron 注册最终一致性 — 解决 gateway busy 时 cron add 批量失败
+
+**根因**：OpenClaw `cron add` CLI 通过 WebSocket 调 gateway；在主 agent 刚跑完 setup.sh + 冷启动三连时 gateway 正忙，CLI 等不到响应就超时 → 6 个注册任务成功率不稳定（实测一次仅 1/6 成功）。
+
+**修复思路**：把"一次性注册"变成"最终一致性注册"——失败了不算结束，下次激活时自动补。
+
+- `scripts/schedule-cron.sh` 重写：
+  - 每条 `cron add` 内置 3 次重试（0s → 3s → 8s 指数退避）
+  - 不同任务之间固定 2s 间隔，避免集中打爆 gateway
+  - 重试仍失败的任务，以可执行 `.cmd` 文件形式写入 `wanderclaw/pending-cron/` 队列
+  - 脚本开头自动 drain 这个队列，成功的移除，失败的保留
+  - 新增 `--drain-only` 标志：只补 pending，不新增（幂等可多次调用）
+
+- `SKILL.md` 激活规则新增"静默副任务"：每次被触发时，如发现 `pending-cron/` 有待办，后台调用 `schedule-cron.sh --drain-only`，不打扰用户。队列彻底清空时可顺口报告一下。
+
+- 对用户的承诺：cron 注册变成"最终会成功"而不是"要么成要么失败"。用户不再需要手动 ssh 上去重跑脚本。
+
+---
+
 ## v3.2.3 (2026-04-20)
 
 ### DORMANT 模型 + 一次性安装提示
