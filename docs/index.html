@@ -522,7 +522,7 @@
       <div class="note">
         <strong>💡 发生了什么：</strong>
         clawhub 把 <code class="inline">wanderClaw</code> 仓库拉到 <code class="inline">~/.claude/skills/wanderclaw/</code>，
-        Claude Code 下次启动时就能自动发现这个 skill。核心文件是 <code class="inline">SKILL.md</code>，
+        OpenClaw 下次启动时就能自动发现这个 skill。核心文件是 <code class="inline">SKILL.md</code>，
         里面是虾游的触发规则和行为描述。
       </div>
     </div>
@@ -540,7 +540,7 @@
 
       <div class="chat-window">
         <div class="chat-head">
-          <span style="color: var(--ok);">●</span> Claude Code · 对话中
+          <span style="color: var(--ok);">●</span> OpenClaw · 对话中
         </div>
         <div class="chat-body" id="chat-1">
           <!-- Dynamic -->
@@ -871,7 +871,7 @@
           </div>
           <div class="terminal-body" style="text-align: left;">
             <div class="term-line"><span class="term-prompt">$</span> <span class="term-cmd">clawhub install wanderclaw</span></div>
-            <div class="term-line term-out" style="margin-top: 8px;"># 然后随时对 Claude 说一声：</div>
+            <div class="term-line term-out" style="margin-top: 8px;"># 然后随时对 OpenClaw 说一声：</div>
             <div class="term-line"><span class="term-warn">  "虾游"</span></div>
           </div>
         </div>
@@ -1037,10 +1037,10 @@
       ['term-out', '  references/EXPLORER.md     ✓'],
       ['term-out', '  scripts/setup.sh           ✓'],
       ['term-out', '  assets/interest-graph.json ✓'],
-      ['term-info', '→ Registering skill with Claude Code...'],
+      ['term-info', '→ Registering skill with OpenClaw...'],
       ['term-ok', '✓ wanderclaw installed successfully!'],
       ['term-warn', ''],
-      ['term-warn', '💡 Next step: open Claude Code and say "虾游"'],
+      ['term-warn', '💡 Next step: open OpenClaw and say "虾游"'],
     ];
     for (const [cls, text] of steps) {
       if (!alive()) return;
